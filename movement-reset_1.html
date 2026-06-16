@@ -10,113 +10,100 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f0f0f;
-  --surface:#1a1a1a;
-  --surface2:#242424;
-  --border:rgba(255,255,255,0.07);
-  --border2:rgba(255,255,255,0.14);
-  --text:#f0f0f0;
-  --text2:#888;
-  --text3:#484848;
-  --accent:#c8f0d8;
-  --accent-dim:rgba(200,240,216,0.1);
-  --accent-text:#1a4a2e;
-  --r:12px;
-  --rs:8px;
-  --safe-top:env(safe-area-inset-top);
-  --safe-bot:env(safe-area-inset-bottom);
+  --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
+  --text:#f0f0f0;--text2:#888;--text3:#484848;
+  --accent:#c8f0d8;--accent-dim:rgba(200,240,216,0.1);--accent-text:#1a4a2e;
+  --rest:#f0d8a8;--rest-dim:rgba(240,216,168,0.1);--rest-text:#4a3a1a;
+  --r:12px;--rs:8px;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill-available}
-
 .screen{display:none;flex-direction:column;flex:1;overflow:hidden}
 .screen.active{display:flex}
 
-/* ── TOP NAV ── */
-.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;padding-top:calc(12px + var(--safe-top));border-bottom:.5px solid var(--border);flex-shrink:0}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:.5px solid var(--border);flex-shrink:0}
 .nav-title{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2)}
 .nav-tab{font-size:13px;color:var(--text2);cursor:pointer;padding:4px 8px;border-radius:var(--rs);-webkit-tap-highlight-color:transparent}
-.nav-tab.on{color:var(--accent)}
+.nav-tab.accent{color:var(--accent)}
 
-/* ── PROGRESS BAR ── */
 .prog-wrap{height:2px;background:var(--border);flex-shrink:0}
 .prog-fill{height:100%;background:var(--accent);transition:width .4s ease;width:0%}
 
-/* ── LIST ── */
 .list-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 0 110px}
 .exercise{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:.5px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .ex-check{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:var(--text2);font-weight:500;transition:all .2s}
 .exercise.done .ex-check{background:var(--accent);border-color:var(--accent);color:var(--accent-text);font-size:14px}
 .ex-body{flex:1;min-width:0}
-.ex-name{font-size:15px;font-weight:500;color:var(--text);line-height:1.3;transition:color .2s}
+.ex-name{font-size:15px;font-weight:500;color:var(--text);line-height:1.3}
 .exercise.done .ex-name{color:var(--text3)}
 .ex-cue{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.4}
 .ex-duration{font-size:13px;font-weight:500;color:var(--text2);font-variant-numeric:tabular-nums;flex-shrink:0}
 .exercise.done .ex-duration{color:var(--text3)}
 
-/* ── BOTTOM BAR ── */
-.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:.5px solid var(--border);padding:12px 20px;padding-bottom:calc(12px + var(--safe-bot));display:flex;gap:10px;align-items:center}
-.btn-reset{padding:12px 16px;background:var(--surface);border:.5px solid var(--border2);border-radius:var(--rs);color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;flex-shrink:0}
-.btn-primary{flex:1;padding:12px;background:var(--accent);border:none;border-radius:var(--rs);color:var(--accent-text);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:.5px solid var(--border);padding:12px 20px;padding-bottom:calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center}
+.btn-sec{padding:12px 16px;background:var(--surface);border:.5px solid var(--border2);border-radius:var(--rs);color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;flex-shrink:0}
+.btn-pri{flex:1;padding:12px;background:var(--accent);border:none;border-radius:var(--rs);color:var(--accent-text);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .done-ct{font-size:12px;color:var(--text3);white-space:nowrap;flex-shrink:0}
 
-/* ── TIMER OVERLAY ── */
-.overlay{display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:40px 24px;padding-top:calc(40px + var(--safe-top));padding-bottom:calc(24px + var(--safe-bot))}
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:24px;padding-top:calc(32px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 .overlay.visible{display:flex}
-.ov-num{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
-.ov-name{font-size:24px;font-weight:600;color:var(--text);text-align:center;line-height:1.25;margin-bottom:8px;max-width:300px}
-.ov-cue{font-size:14px;color:var(--text2);text-align:center;line-height:1.5;max-width:260px;margin-bottom:40px}
-.ring-wrap{position:relative;width:200px;height:200px;margin-bottom:40px}
-.ring-svg{width:200px;height:200px;transform:rotate(-90deg)}
+.ov-step{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.ov-name{font-size:22px;font-weight:600;color:var(--text);text-align:center;line-height:1.25;margin-bottom:6px;max-width:300px}
+.ov-side{font-size:15px;font-weight:600;text-align:center;margin-bottom:6px;min-height:22px}
+.ov-cue{font-size:13px;color:var(--text2);text-align:center;line-height:1.5;max-width:260px;margin-bottom:32px}
+.ring-wrap{position:relative;width:190px;height:190px;margin-bottom:32px}
+.ring-svg{width:190px;height:190px;transform:rotate(-90deg)}
 .ring-bg{fill:none;stroke:var(--surface2);stroke-width:8}
 .ring-prog{fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
-.ring-time{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:54px;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--text)}
-.ov-controls{display:flex;gap:12px;width:100%;max-width:320px}
+.ring-prog.rest-color{stroke:var(--rest)}
+.ring-time{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:50px;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--text)}
+.ov-next-label{font-size:11px;color:var(--text3);text-align:center;margin-bottom:28px;min-height:14px}
+.ov-controls{display:flex;gap:12px;width:100%;max-width:310px}
 .ov-btn{flex:1;padding:14px;border-radius:var(--rs);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;border:none;-webkit-tap-highlight-color:transparent}
 .ov-btn-sec{background:var(--surface2);color:var(--text2)}
 .ov-btn-pri{background:var(--accent);color:var(--accent-text);flex:2}
-.ov-skip{margin-top:18px;font-size:13px;color:var(--text3);cursor:pointer;padding:8px;-webkit-tap-highlight-color:transparent}
+.ov-skip{margin-top:14px;font-size:13px;color:var(--text3);cursor:pointer;padding:8px;-webkit-tap-highlight-color:transparent}
 
-/* ── STATS SCREEN ── */
+/* STATS */
 .stats-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 20px 100px}
 .streak-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:24px}
 .s-card{background:var(--surface);border-radius:var(--r);padding:16px;text-align:center}
 .s-val{font-size:36px;font-weight:300;color:var(--text);margin-bottom:4px;font-variant-numeric:tabular-nums}
-.s-val.accent{color:var(--accent)}
+.s-val.hi{color:var(--accent)}
 .s-label{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
-.section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:24px}
-.cal-day-label{font-size:10px;color:var(--text3);text-align:center;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding-bottom:4px}
-.cal-cell{aspect-ratio:1;border-radius:5px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text3)}
-.cal-cell.done-day{background:var(--accent-dim);border:.5px solid rgba(200,240,216,.25)}
-.cal-cell.done-day span{color:var(--accent);font-weight:600}
-.cal-cell.today{border:.5px solid var(--border2)}
-.cal-cell.today span{color:var(--text2)}
+.sec-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:24px}
+.cal-dl{font-size:10px;color:var(--text3);text-align:center;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding-bottom:4px}
+.cal-cell{aspect-ratio:1;border-radius:5px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3)}
+.cal-cell.hit{background:var(--accent-dim);border:.5px solid rgba(200,240,216,.25)}
+.cal-cell.hit span{color:var(--accent);font-weight:600}
+.cal-cell.tod{border:.5px solid var(--border2)}
+.cal-cell.tod span{color:var(--text2)}
 .history-list{display:flex;flex-direction:column;gap:8px}
-.history-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface);border-radius:var(--rs)}
+.h-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface);border-radius:var(--rs)}
 .h-date{font-size:14px;color:var(--text)}
 .h-badge{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--accent-dim);color:var(--accent)}
-.empty-state{text-align:center;padding:48px 20px;color:var(--text3);font-size:14px;line-height:1.6}
+.empty{text-align:center;padding:48px 20px;color:var(--text3);font-size:14px;line-height:1.6}
 </style>
 </head>
 <body>
 
-<!-- LIST SCREEN -->
 <div class="screen active" id="screen-list">
   <div class="nav">
     <span class="nav-title">Movement Reset</span>
-    <span class="nav-tab" id="tab-stats" onclick="showStats()">Streaks</span>
+    <span class="nav-tab" onclick="showStats()">Streaks</span>
   </div>
   <div class="prog-wrap"><div class="prog-fill" id="progress"></div></div>
   <div class="list-wrap" id="list"></div>
   <div class="bottom-bar">
-    <button class="btn-reset" onclick="resetAll()">Reset</button>
+    <button class="btn-sec" onclick="resetAll()">Reset</button>
     <span class="done-ct" id="done-ct">0 / 11</span>
-    <button class="btn-primary" id="btn-go" onclick="startFromFirst()">Start routine</button>
+    <button class="btn-pri" id="btn-go" onclick="startFromFirst()">Start routine</button>
   </div>
 </div>
 
-<!-- STATS SCREEN -->
 <div class="screen" id="screen-stats">
   <div class="nav">
     <span class="nav-tab" onclick="showList()">Back</span>
@@ -126,158 +113,287 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   <div class="stats-wrap" id="stats-content"></div>
 </div>
 
-<!-- TIMER OVERLAY -->
 <div class="overlay" id="overlay">
-  <div class="ov-num" id="ov-num">Exercise 1 of 11</div>
+  <div class="ov-step" id="ov-step">Exercise 1 of 11</div>
   <div class="ov-name" id="ov-name"></div>
+  <div class="ov-side" id="ov-side"></div>
   <div class="ov-cue" id="ov-cue"></div>
   <div class="ring-wrap">
-    <svg class="ring-svg" viewBox="0 0 200 200">
-      <circle class="ring-bg" cx="100" cy="100" r="88"/>
-      <circle class="ring-prog" id="ring" cx="100" cy="100" r="88" stroke-dasharray="553" stroke-dashoffset="0"/>
+    <svg class="ring-svg" viewBox="0 0 190 190">
+      <circle class="ring-bg" cx="95" cy="95" r="83"/>
+      <circle class="ring-prog" id="ring" cx="95" cy="95" r="83" stroke-dasharray="521" stroke-dashoffset="0"/>
     </svg>
     <div class="ring-time" id="ov-time">60</div>
   </div>
+  <div class="ov-next-label" id="ov-next"></div>
   <div class="ov-controls">
     <button class="ov-btn ov-btn-sec" onclick="closeOverlay()">Back</button>
     <button class="ov-btn ov-btn-pri" id="ov-play" onclick="toggleTimer()">Start</button>
   </div>
-  <div class="ov-skip" onclick="skipExercise()">Mark done &amp; skip</div>
+  <div class="ov-skip" id="ov-skip-btn" onclick="skipCurrent()">Mark done &amp; skip</div>
 </div>
 
 <script>
+const CIRC = 521;
+const SK = 'mvmt_v2';
+
+// Each entry: name, cue, steps array [{label, secs}]
+// label '' = no side label, 'Left side' / 'Right side' for bilateral
 const EX = [
-  {name:"Thoracic extension on foam roller",duration:"75 sec",secs:75,cue:"Segment by segment"},
-  {name:"Dead hang",duration:"30 sec",secs:30,cue:"Passive decompression"},
-  {name:"Doorframe overhead reach",duration:"60 sec",secs:60,cue:"Ribs down, feel the lats"},
-  {name:"90/90 hip rotations",duration:"60 sec",secs:60,cue:"6 each side, slow — stay active not passive"},
-  {name:"Couch stretch",duration:"60 sec each side",secs:60,cue:"Glute squeezed, no lumbar flare"},
-  {name:"Figure 4 on box",duration:"60 sec each side",secs:60,cue:"Chest toward shin, spine long"},
-  {name:"Knee-over-toe rocks",duration:"60 sec each side",secs:60,cue:"Heel glued down, slow"},
-  {name:"Soleus stretch",duration:"60 sec each side",secs:60,cue:"Knee bent, torso upright"},
-  {name:"Deep squat hold",duration:"60 sec",secs:60,cue:"Heels elevated, work toward flat over time"},
-  {name:"Jefferson curl",duration:"60 sec",secs:60,cue:"Slow tempo, vertebra by vertebra"},
-  {name:"Open legs up the wall",duration:"120 sec",secs:120,cue:"Passive wind-down closer"},
+  {name:'Thoracic extension on foam roller', cue:'Segment by segment', steps:[{label:'',secs:75}]},
+  {name:'Dead hang', cue:'Passive decompression', steps:[{label:'',secs:30}]},
+  {name:'Doorframe overhead reach', cue:'Ribs down, feel the lats', steps:[{label:'',secs:60}]},
+  {name:'90/90 hip rotations', cue:'6 each side, slow — stay active', steps:[{label:'',secs:60}]},
+  {name:'Couch stretch', cue:'Glute squeezed, no lumbar flare', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
+  {name:'Figure 4 on box', cue:'Chest toward shin, spine long', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
+  {name:'Knee-over-toe rocks', cue:'Heel glued down, slow', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
+  {name:'Soleus stretch', cue:'Knee bent, torso upright', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
+  {name:'Deep squat hold', cue:'Heels elevated, work toward flat', steps:[{label:'',secs:60}]},
+  {name:'Jefferson curl', cue:'Slow tempo, vertebra by vertebra', steps:[{label:'',secs:60}]},
+  {name:'Open legs up the wall', cue:'Passive wind-down closer', steps:[{label:'',secs:120}]},
 ];
 
-const CIRC = 553;
-const SK = 'mvmt_history';
+const REST_SECS = 5;
+const TOTAL_EX = EX.length;
 
+// Queue item types: 'exercise' {exIdx, stepIdx} | 'rest' {nextExIdx, nextStepIdx}
+let queue = [];
+let qPos = 0;
+let done = new Set(); // exIdx keys
+let ovInterval = null;
+let ovRunning = false;
+let ovRem = 0;
+let ovTotal = 0;
+let ovIsRest = false;
+
+function buildQueue() {
+  queue = [];
+  EX.forEach((ex, ei) => {
+    ex.steps.forEach((st, si) => {
+      queue.push({type:'exercise', exIdx:ei, stepIdx:si});
+      // add rest after every step except the very last queue item
+      queue.push({type:'rest', nextExIdx:ei, nextStepIdx:si+1, nextEx:ei + (si===ex.steps.length-1 ? 1 : 0)});
+    });
+  });
+  // remove trailing rest
+  if(queue[queue.length-1]?.type==='rest') queue.pop();
+}
+
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function loadHistory(){try{return JSON.parse(localStorage.getItem(SK))||[];}catch(e){return[];}}
 function saveHistory(h){try{localStorage.setItem(SK,JSON.stringify(h));}catch(e){}}
-function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function markToday(){const h=loadHistory(),t=todayStr();if(!h.includes(t)){h.push(t);saveHistory(h);}}
+function fmt(s){s=Math.max(0,s);const m=Math.floor(s/60),sc=s%60;return m>0?m+':'+String(sc).padStart(2,'0'):String(sc);}
 
-let done=new Set();
-let ovIdx=null,ovRem=0,ovInterval=null,ovRunning=false;
-
-function fmt(s){s=Math.max(0,s);const m=Math.floor(s/60),sec=s%60;return m>0?m+':'+String(sec).padStart(2,'0'):String(sec);}
-
-function markTodayComplete(){
-  const h=loadHistory();
-  const t=todayStr();
-  if(!h.includes(t)){h.push(t);saveHistory(h);}
+function completedExercises(){
+  // an exercise is done if all its steps have been passed
+  const doneEx=new Set();
+  for(let i=0;i<qPos;i++){
+    const q=queue[i];
+    if(q.type==='exercise'){
+      const ex=EX[q.exIdx];
+      if(q.stepIdx===ex.steps.length-1) doneEx.add(q.exIdx);
+    }
+  }
+  // also current if we just finished
+  return doneEx;
 }
 
 function renderList(){
+  const doneEx=completedExercises();
   const list=document.getElementById('list');
   list.innerHTML='';
   EX.forEach((ex,i)=>{
+    const isDone=doneEx.has(i);
     const div=document.createElement('div');
-    div.className='exercise'+(done.has(i)?' done':'');
-    div.onclick=()=>openOverlay(i);
-    div.innerHTML='<div class="ex-check">'+(done.has(i)?'&#10003;':(i+1))+'</div>'+
+    div.className='exercise'+(isDone?' done':'');
+    div.onclick=()=>jumpToExercise(i);
+    const dur=ex.steps.length>1?(ex.steps[0].secs+' sec each side'):(ex.steps[0].secs+' sec');
+    div.innerHTML='<div class="ex-check">'+(isDone?'&#10003;':(i+1))+'</div>'+
       '<div class="ex-body"><div class="ex-name">'+ex.name+'</div><div class="ex-cue">'+ex.cue+'</div></div>'+
-      '<div class="ex-duration">'+ex.duration+'</div>';
+      '<div class="ex-duration">'+dur+'</div>';
     list.appendChild(div);
   });
-  const pct=(done.size/EX.length)*100;
+  const pct=(doneEx.size/TOTAL_EX)*100;
   document.getElementById('progress').style.width=pct+'%';
-  document.getElementById('done-ct').textContent=done.size+' / '+EX.length;
-  const allDone=done.size===EX.length;
-  const anyDone=done.size>0;
-  document.getElementById('btn-go').textContent=allDone?'Complete!':(anyDone?'Continue':'Start routine');
-  if(allDone) markTodayComplete();
+  document.getElementById('done-ct').textContent=doneEx.size+' / '+TOTAL_EX;
+  document.getElementById('btn-go').textContent=doneEx.size===TOTAL_EX?'Complete!':(doneEx.size>0?'Continue':'Start routine');
+  if(doneEx.size===TOTAL_EX) markToday();
 }
 
-function openOverlay(i){
+function jumpToExercise(exIdx){
+  // find first queue item for this exercise
+  const pos=queue.findIndex(q=>q.type==='exercise'&&q.exIdx===exIdx);
+  if(pos>=0){qPos=pos;openCurrent();}
+}
+
+function startFromFirst(){
+  // find first incomplete exercise
+  const doneEx=completedExercises();
+  let startEx=0;
+  for(let i=0;i<TOTAL_EX;i++){if(!doneEx.has(i)){startEx=i;break;}}
+  jumpToExercise(startEx);
+}
+
+function openCurrent(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
-  ovRunning=false;ovIdx=i;ovRem=EX[i].secs;
-  document.getElementById('ov-num').textContent='Exercise '+(i+1)+' of '+EX.length;
-  document.getElementById('ov-name').textContent=EX[i].name;
-  document.getElementById('ov-cue').textContent=EX[i].cue;
-  document.getElementById('ov-time').textContent=fmt(ovRem);
-  document.getElementById('ov-play').textContent='Start';
-  document.getElementById('ring').style.strokeDashoffset=0;
+  ovRunning=false;
+  if(qPos>=queue.length){closeOverlay();return;}
+  const item=queue[qPos];
+  if(item.type==='rest'){
+    showRest(item);
+  } else {
+    showExercise(item);
+  }
   document.getElementById('overlay').classList.add('visible');
+}
+
+function showExercise(item){
+  const ex=EX[item.exIdx];
+  const st=ex.steps[item.stepIdx];
+  ovIsRest=false;
+  ovRem=st.secs; ovTotal=st.secs;
+  // step counter counts exercises not queue items
+  const exNum=item.exIdx+1;
+  document.getElementById('ov-step').textContent='Exercise '+exNum+' of '+TOTAL_EX;
+  document.getElementById('ov-name').textContent=ex.name;
+  document.getElementById('ov-side').textContent=st.label;
+  document.getElementById('ov-side').style.color=st.label?'var(--accent)':'transparent';
+  document.getElementById('ov-cue').textContent=ex.cue;
+  document.getElementById('ov-time').textContent=fmt(ovRem);
+  document.getElementById('ring').classList.remove('rest-color');
+  document.getElementById('ring').style.strokeDashoffset=0;
+  document.getElementById('ov-play').textContent='Start';
+  document.getElementById('ov-skip-btn').style.display='block';
+  // next label
+  const nextQ=queue[qPos+1];
+  if(nextQ){
+    if(nextQ.type==='rest'){
+      const afterRest=queue[qPos+2];
+      if(afterRest){
+        const aex=EX[afterRest.exIdx];
+        const ast=aex.steps[afterRest.stepIdx];
+        document.getElementById('ov-next').textContent='Next: '+(ast.label?ast.label+' — ':'')+aex.name;
+      }
+    }
+  } else {
+    document.getElementById('ov-next').textContent='Last exercise';
+  }
+}
+
+function showRest(item){
+  ovIsRest=true;
+  ovRem=REST_SECS; ovTotal=REST_SECS;
+  document.getElementById('ov-step').textContent='Rest';
+  // figure out what's next
+  const nextQ=queue[qPos+1];
+  let nextName='';
+  if(nextQ){
+    const ex=EX[nextQ.exIdx];
+    const st=ex.steps[nextQ.stepIdx];
+    nextName=(st.label?st.label+' — ':'')+ex.name;
+    document.getElementById('ov-name').textContent=ex.name;
+    document.getElementById('ov-side').textContent=st.label||'Get ready';
+    document.getElementById('ov-side').style.color='var(--rest)';
+  }
+  document.getElementById('ov-cue').textContent='Transition into position';
+  document.getElementById('ov-time').textContent=fmt(ovRem);
+  document.getElementById('ring').classList.add('rest-color');
+  document.getElementById('ring').style.strokeDashoffset=0;
+  document.getElementById('ov-play').textContent='Start';
+  document.getElementById('ov-next').textContent=nextName?'Up next: '+nextName:'';
+  document.getElementById('ov-skip-btn').style.display='none';
+  // auto-start rest
+  setTimeout(()=>{ if(ovIsRest) startTimer(); },300);
+}
+
+function startTimer(){
+  if(ovRunning) return;
+  ovRunning=true;
+  document.getElementById('ov-play').textContent='Pause';
+  ovInterval=setInterval(()=>{
+    ovRem--;
+    document.getElementById('ov-time').textContent=fmt(ovRem);
+    document.getElementById('ring').style.strokeDashoffset=CIRC*(1-(ovRem/ovTotal));
+    if(ovRem<=0){
+      clearInterval(ovInterval);ovInterval=null;ovRunning=false;
+      qPos++;
+      renderList();
+      if(qPos>=queue.length){
+        setTimeout(()=>closeOverlay(),600);
+      } else {
+        setTimeout(()=>openCurrent(),400);
+      }
+    }
+  },1000);
+}
+
+function toggleTimer(){
+  if(ovRunning){
+    clearInterval(ovInterval);ovInterval=null;ovRunning=false;
+    document.getElementById('ov-play').textContent='Resume';
+  } else {
+    if(ovRem<=0){ovRem=ovTotal;document.getElementById('ring').style.strokeDashoffset=0;}
+    startTimer();
+  }
+}
+
+function skipCurrent(){
+  if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
+  ovRunning=false;
+  // skip to end of this exercise (all steps)
+  const item=queue[qPos];
+  if(item.type==='exercise'){
+    const exIdx=item.exIdx;
+    // advance past all steps of this exercise and their rests
+    while(qPos<queue.length){
+      const q=queue[qPos];
+      if(q.type==='exercise'&&q.exIdx===exIdx){qPos++;}
+      else if(q.type==='rest'){
+        // skip rest only if next exercise is same
+        const nxt=queue[qPos+1];
+        if(nxt&&nxt.type==='exercise'&&nxt.exIdx===exIdx){qPos++;}
+        else break;
+      } else break;
+    }
+  }
+  renderList();
+  if(qPos>=queue.length){closeOverlay();}
+  else{openCurrent();}
 }
 
 function closeOverlay(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
   ovRunning=false;
   document.getElementById('overlay').classList.remove('visible');
-}
-
-function toggleTimer(){
-  if(ovRunning){
-    clearInterval(ovInterval);ovInterval=null;ovRunning=false;
-    document.getElementById('ov-play').textContent='Resume';return;
-  }
-  if(ovRem<=0){ovRem=EX[ovIdx].secs;document.getElementById('ring').style.strokeDashoffset=0;}
-  ovRunning=true;
-  document.getElementById('ov-play').textContent='Pause';
-  const total=EX[ovIdx].secs;
-  ovInterval=setInterval(()=>{
-    ovRem--;
-    document.getElementById('ov-time').textContent=fmt(ovRem);
-    document.getElementById('ring').style.strokeDashoffset=CIRC*(1-(ovRem/total));
-    if(ovRem<=0){
-      clearInterval(ovInterval);ovInterval=null;ovRunning=false;
-      done.add(ovIdx);renderList();
-      const next=ovIdx+1;
-      if(next<EX.length){setTimeout(()=>openOverlay(next),600);}
-      else{setTimeout(()=>closeOverlay(),800);}
-    }
-  },1000);
-}
-
-function skipExercise(){
-  if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
-  ovRunning=false;done.add(ovIdx);
-  const next=ovIdx+1;renderList();
-  if(next<EX.length){openOverlay(next);}else{closeOverlay();}
-}
-
-function startFromFirst(){
-  const first=[...Array(EX.length).keys()].find(i=>!done.has(i));
-  if(first!==undefined)openOverlay(first);
+  renderList();
 }
 
 function resetAll(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
-  ovRunning=false;done=new Set();
+  ovRunning=false;qPos=0;
   document.getElementById('overlay').classList.remove('visible');
   renderList();
 }
 
+// STATS
 function calcStreaks(history){
   if(!history.length)return{current:0,longest:0};
   const sorted=[...new Set(history)].sort();
-  let longest=1,run=1,current=0;
+  let longest=1,run=1;
   for(let i=1;i<sorted.length;i++){
-    const prev=new Date(sorted[i-1]),cur=new Date(sorted[i]);
-    const diff=(cur-prev)/(1000*60*60*24);
-    if(diff===1){run++;if(run>longest)longest=run;}
-    else{run=1;}
+    const diff=(new Date(sorted[i])-new Date(sorted[i-1]))/(86400000);
+    if(diff===1){run++;if(run>longest)longest=run;}else run=1;
   }
   const today=todayStr();
-  const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
-  const yStr=yesterday.getFullYear()+'-'+String(yesterday.getMonth()+1).padStart(2,'0')+'-'+String(yesterday.getDate()).padStart(2,'0');
+  const yest=new Date();yest.setDate(yest.getDate()-1);
+  const yStr=yest.getFullYear()+'-'+String(yest.getMonth()+1).padStart(2,'0')+'-'+String(yest.getDate()).padStart(2,'0');
   const last=sorted[sorted.length-1];
+  let current=0;
   if(last===today||last===yStr){
     current=1;
     for(let i=sorted.length-2;i>=0;i--){
-      const a=new Date(sorted[i+1]),b=new Date(sorted[i]);
-      if((a-b)/(1000*60*60*24)===1)current++;else break;
+      if((new Date(sorted[i+1])-new Date(sorted[i]))/86400000===1)current++;else break;
     }
   }
   return{current,longest};
@@ -288,7 +404,6 @@ function showStats(){
   document.getElementById('screen-stats').classList.add('active');
   renderStats();
 }
-
 function showList(){
   document.getElementById('screen-stats').classList.remove('active');
   document.getElementById('screen-list').classList.add('active');
@@ -297,58 +412,45 @@ function showList(){
 function renderStats(){
   const history=loadHistory();
   const histSet=new Set(history);
-  const {current,longest}=calcStreaks(history);
+  const{current,longest}=calcStreaks(history);
   const total=history.length;
+  const weeks=total>0?Math.round(total/4.3):0;
 
-  const days=['M','T','W','T','F','S','S'];
   const today=new Date();
-  const todayD=today.getDay();
-  const cells=[];
-  for(let i=41;i>=0;i--){
-    const d=new Date(today);
-    d.setDate(d.getDate()-i);
-    const str=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    const isToday=i===0;
-    const isDone=histSet.has(str);
-    cells.push({str,day:d.getDate(),isToday,isDone});
-  }
-
-  const firstDow=new Date(today);firstDow.setDate(firstDow.getDate()-41);
-  const startDow=(firstDow.getDay()+6)%7;
-
   let calHTML='';
-  days.forEach(d=>{calHTML+='<div class="cal-day-label">'+d+'</div>';});
+  ['M','T','W','T','F','S','S'].forEach(d=>{calHTML+='<div class="cal-dl">'+d+'</div>';});
+  const startD=new Date(today);startD.setDate(startD.getDate()-41);
+  const startDow=(startD.getDay()+6)%7;
   for(let i=0;i<startDow;i++)calHTML+='<div class="cal-cell"></div>';
-  cells.forEach(c=>{
-    let cls='cal-cell'+(c.isDone?' done-day':'')+(c.isToday?' today':'');
-    calHTML+='<div class="'+cls+'"><span>'+c.day+'</span></div>';
-  });
+  for(let i=41;i>=0;i--){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const str=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    const hit=histSet.has(str),isToday=i===0;
+    calHTML+='<div class="cal-cell'+(hit?' hit':'')+(isToday?' tod':'')+'"><span>'+d.getDate()+'</span></div>';
+  }
 
   const recent=[...history].reverse().slice(0,20);
-  let histHTML='';
-  if(recent.length===0){
-    histHTML='<div class="empty-state">No sessions yet.<br>Complete your first routine<br>to start your streak.</div>';
-  } else {
-    recent.forEach(d=>{
-      const date=new Date(d+'T12:00:00');
-      const label=date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-      histHTML+='<div class="history-item"><span class="h-date">'+label+'</span><span class="h-badge">Done</span></div>';
-    });
-  }
+  let histHTML=recent.length?'':'<div class="empty">No sessions yet.<br>Complete your first routine<br>to start your streak.</div>';
+  recent.forEach(d=>{
+    const date=new Date(d+'T12:00:00');
+    const label=date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    histHTML+='<div class="h-item"><span class="h-date">'+label+'</span><span class="h-badge">Done</span></div>';
+  });
 
   document.getElementById('stats-content').innerHTML=
     '<div class="streak-cards">'+
-      '<div class="s-card"><div class="s-val accent">'+current+'</div><div class="s-label">Current streak</div></div>'+
+      '<div class="s-card"><div class="s-val hi">'+current+'</div><div class="s-label">Current streak</div></div>'+
       '<div class="s-card"><div class="s-val">'+longest+'</div><div class="s-label">Best streak</div></div>'+
       '<div class="s-card"><div class="s-val">'+total+'</div><div class="s-label">Total sessions</div></div>'+
-      '<div class="s-card"><div class="s-val">'+Math.round(total/4.3)+'</div><div class="s-label">Weeks active</div></div>'+
+      '<div class="s-card"><div class="s-val">'+weeks+'</div><div class="s-label">Weeks active</div></div>'+
     '</div>'+
-    '<div class="section-title" style="margin-bottom:12px">Last 6 weeks</div>'+
+    '<div class="sec-title">Last 6 weeks</div>'+
     '<div class="cal-grid">'+calHTML+'</div>'+
-    '<div class="section-title" style="margin-top:8px;margin-bottom:12px">History</div>'+
+    '<div class="sec-title" style="margin-top:8px;margin-bottom:12px">History</div>'+
     '<div class="history-list">'+histHTML+'</div>';
 }
 
+buildQueue();
 renderList();
 </script>
 </body>
