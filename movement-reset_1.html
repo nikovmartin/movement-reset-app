@@ -165,6 +165,7 @@ let ovRunning = false;
 let ovRem = 0;
 let ovTotal = 0;
 let ovIsRest = false;
+let routineStarted = false;
 
 function buildQueue() {
   queue = [];
@@ -263,8 +264,8 @@ function showExercise(item){
   document.getElementById('ov-time').textContent=fmt(ovRem);
   document.getElementById('ring').classList.remove('rest-color');
   document.getElementById('ring').style.strokeDashoffset=0;
-  document.getElementById('ov-play').textContent='Start';
   document.getElementById('ov-skip-btn').style.display='block';
+  if(routineStarted){ setTimeout(()=>startTimer(),400); }
   // next label
   const nextQ=queue[qPos+1];
   if(nextQ){
@@ -334,6 +335,7 @@ function toggleTimer(){
     document.getElementById('ov-play').textContent='Resume';
   } else {
     if(ovRem<=0){ovRem=ovTotal;document.getElementById('ring').style.strokeDashoffset=0;}
+    routineStarted=true;
     startTimer();
   }
 }
@@ -364,14 +366,14 @@ function skipCurrent(){
 
 function closeOverlay(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
-  ovRunning=false;
+  ovRunning=false;routineStarted=false;
   document.getElementById('overlay').classList.remove('visible');
   renderList();
 }
 
 function resetAll(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
-  ovRunning=false;qPos=0;
+  ovRunning=false;qPos=0;routineStarted=false;
   document.getElementById('overlay').classList.remove('visible');
   renderList();
 }
