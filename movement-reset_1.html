@@ -180,9 +180,18 @@ function saveHistory(h){try{localStorage.setItem(SK,JSON.stringify(h));}catch(e)
 function markToday(){const h=loadHistory(),t=todayStr();if(!h.includes(t)){h.push(t);saveHistory(h);}}
 function fmt(s){s=Math.max(0,s);const m=Math.floor(s/60),sc=s%60;return m>0?m+':'+String(sc).padStart(2,'0'):String(sc);}
 
+let audioCtx=null;
+function getAudioCtx(){
+  if(!audioCtx||audioCtx.state==="closed"){
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  }
+  if(audioCtx.state==="suspended") audioCtx.resume();
+  return audioCtx;
+}
+
 function playBeep(){
   try{
-    const c=new(window.AudioContext||window.webkitAudioContext)(),now=c.currentTime;
+    const c=getAudioCtx(),now=c.currentTime;
     [0,0.18].forEach(offset=>{
       const o=c.createOscillator(),g=c.createGain();
       o.connect(g);g.connect(c.destination);
@@ -336,6 +345,7 @@ function toggleTimer(){
   } else {
     if(ovRem<=0){ovRem=ovTotal;document.getElementById('ring').style.strokeDashoffset=0;}
     routineStarted=true;
+    getAudioCtx();
     startTimer();
   }
 }
