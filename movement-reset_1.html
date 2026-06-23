@@ -25,7 +25,6 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:.5px solid var(--border);flex-shrink:0}
 .nav-title{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2)}
 .nav-tab{font-size:13px;color:var(--text2);cursor:pointer;padding:4px 8px;border-radius:var(--rs);-webkit-tap-highlight-color:transparent}
-.nav-tab.accent{color:var(--accent)}
 
 .prog-wrap{height:2px;background:var(--border);flex-shrink:0}
 .prog-fill{height:100%;background:var(--accent);transition:width .4s ease;width:0%}
@@ -46,7 +45,6 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .btn-pri{flex:1;padding:12px;background:var(--accent);border:none;border-radius:var(--rs);color:var(--accent-text);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .done-ct{font-size:12px;color:var(--text3);white-space:nowrap;flex-shrink:0}
 
-/* OVERLAY */
 .overlay{display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:24px;padding-top:calc(32px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 .overlay.visible{display:flex}
 .ov-step{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
@@ -57,16 +55,16 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .ring-svg{width:190px;height:190px;transform:rotate(-90deg)}
 .ring-bg{fill:none;stroke:var(--surface2);stroke-width:8}
 .ring-prog{fill:none;stroke:var(--accent);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
-.ring-prog.rest-color{stroke:var(--rest)}
+.ring-prog.rest-ring{stroke:var(--rest)}
 .ring-time{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:50px;font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-.02em;color:var(--text)}
 .ov-next-label{font-size:11px;color:var(--text3);text-align:center;margin-bottom:28px;min-height:14px}
 .ov-controls{display:flex;gap:12px;width:100%;max-width:310px}
 .ov-btn{flex:1;padding:14px;border-radius:var(--rs);font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;border:none;-webkit-tap-highlight-color:transparent}
 .ov-btn-sec{background:var(--surface2);color:var(--text2)}
 .ov-btn-pri{background:var(--accent);color:var(--accent-text);flex:2}
-.ov-skip{margin-top:14px;font-size:13px;color:var(--text3);cursor:pointer;padding:8px;-webkit-tap-highlight-color:transparent}
+.ov-btn-pri.rest-btn{background:var(--rest);color:var(--rest-text)}
+.ov-skip{margin-top:14px;font-size:13px;color:var(--text3);cursor:pointer;padding:8px;-webkit-tap-highlight-color:transparent;min-height:36px;display:flex;align-items:center;justify-content:center}
 
-/* STATS */
 .stats-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 20px 100px}
 .streak-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:24px}
 .s-card{background:var(--surface);border-radius:var(--r);padding:16px;text-align:center}
@@ -99,7 +97,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   <div class="list-wrap" id="list"></div>
   <div class="bottom-bar">
     <button class="btn-sec" onclick="resetAll()">Reset</button>
-    <span class="done-ct" id="done-ct">0 / 11</span>
+    <span class="done-ct" id="done-ct">0 / 14</span>
     <button class="btn-pri" id="btn-go" onclick="startFromFirst()">Start routine</button>
   </div>
 </div>
@@ -114,7 +112,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 </div>
 
 <div class="overlay" id="overlay">
-  <div class="ov-step" id="ov-step">Exercise 1 of 11</div>
+  <div class="ov-step" id="ov-step">Exercise 1 of 14</div>
   <div class="ov-name" id="ov-name"></div>
   <div class="ov-side" id="ov-side"></div>
   <div class="ov-cue" id="ov-cue"></div>
@@ -134,49 +132,45 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 </div>
 
 <script>
-const CIRC = 521;
-const SK = 'mvmt_v2';
+const CIRC=521;
+const SK='mvmt_v3';
+const REST_SECS=10;
+const TOTAL_EX=14;
 
-// Each entry: name, cue, steps array [{label, secs}]
-// label '' = no side label, 'Left side' / 'Right side' for bilateral
-const EX = [
-  {name:'Thoracic extension on foam roller', cue:'Segment by segment', steps:[{label:'',secs:75}]},
-  {name:'Dead hang', cue:'Passive decompression', steps:[{label:'',secs:30}]},
-  {name:'Doorframe overhead reach', cue:'Ribs down, feel the lats', steps:[{label:'',secs:60}]},
-  {name:'90/90 hip rotations', cue:'6 each side, slow — stay active', steps:[{label:'',secs:60}]},
-  {name:'Couch stretch', cue:'Glute squeezed, no lumbar flare', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
-  {name:'Figure 4 on box', cue:'Chest toward shin, spine long', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
-  {name:'Knee-over-toe rocks', cue:'Heel glued down, slow', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
-  {name:'Soleus stretch', cue:'Knee bent, torso upright', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
-  {name:'Deep squat hold', cue:'Heels elevated, work toward flat', steps:[{label:'',secs:60}]},
-  {name:'Jefferson curl', cue:'Slow tempo, vertebra by vertebra', steps:[{label:'',secs:60}]},
-  {name:'Open legs up the wall', cue:'Passive wind-down closer', steps:[{label:'',secs:120}]},
+const EX=[
+  {name:'Thoracic extension on foam roller',cue:'Segment by segment',steps:[{label:'',secs:60}]},
+  {name:'Dead hang',cue:'Passive decompression',steps:[{label:'',secs:30}]},
+  {name:'Doorframe overhead reach',cue:'Ribs down, feel the lats',steps:[{label:'',secs:60}]},
+  {name:'Supine thoracic rotation',cue:'Control the rotation, keep hips still',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Neck releases',cue:'Three directions — forward, left, right. Slow and gentle',steps:[{label:'',secs:60}]},
+  {name:'90/90 hip rotations',cue:'6 each side, slow — stay active not passive',steps:[{label:'',secs:60}]},
+  {name:'Couch stretch',cue:'Glute squeezed, no lumbar flare',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Figure 4 on box',cue:'Chest toward shin, spine long',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Frog stretch rockbacks',cue:'Rock back slowly, feel inner hip opening',steps:[{label:'',secs:60}]},
+  {name:'Child\'s pose side stretch',cue:'Walk hands to each side, feel the lateral line',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Knee-over-toe rocks',cue:'Heel glued down, slow',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Soleus stretch',cue:'Knee bent, torso upright',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Deep squat hold',cue:'Heels elevated, work toward flat over time',steps:[{label:'',secs:60}]},
+  {name:'Open legs up the wall',cue:'Passive wind-down closer',steps:[{label:'',secs:120}]},
 ];
 
-const REST_SECS = 5;
-const TOTAL_EX = EX.length;
+let queue=[];
+let qPos=0;
+let ovInterval=null;
+let ovRunning=false;
+let ovRem=0;
+let ovTotal=0;
+let ovIsRest=false;
+let routineStarted=false;
 
-// Queue item types: 'exercise' {exIdx, stepIdx} | 'rest' {nextExIdx, nextStepIdx}
-let queue = [];
-let qPos = 0;
-let done = new Set(); // exIdx keys
-let ovInterval = null;
-let ovRunning = false;
-let ovRem = 0;
-let ovTotal = 0;
-let ovIsRest = false;
-let routineStarted = false;
-
-function buildQueue() {
-  queue = [];
-  EX.forEach((ex, ei) => {
-    ex.steps.forEach((st, si) => {
-      queue.push({type:'exercise', exIdx:ei, stepIdx:si});
-      // add rest after every step except the very last queue item
-      queue.push({type:'rest', nextExIdx:ei, nextStepIdx:si+1, nextEx:ei + (si===ex.steps.length-1 ? 1 : 0)});
+function buildQueue(){
+  queue=[];
+  EX.forEach((ex,ei)=>{
+    ex.steps.forEach((st,si)=>{
+      queue.push({type:'exercise',exIdx:ei,stepIdx:si});
+      queue.push({type:'rest',nextExIdx:ei,nextStepIdx:si+1});
     });
   });
-  // remove trailing rest
   if(queue[queue.length-1]?.type==='rest') queue.pop();
 }
 
@@ -186,8 +180,22 @@ function saveHistory(h){try{localStorage.setItem(SK,JSON.stringify(h));}catch(e)
 function markToday(){const h=loadHistory(),t=todayStr();if(!h.includes(t)){h.push(t);saveHistory(h);}}
 function fmt(s){s=Math.max(0,s);const m=Math.floor(s/60),sc=s%60;return m>0?m+':'+String(sc).padStart(2,'0'):String(sc);}
 
+function playBeep(){
+  try{
+    const c=new(window.AudioContext||window.webkitAudioContext)(),now=c.currentTime;
+    [0,0.18].forEach(offset=>{
+      const o=c.createOscillator(),g=c.createGain();
+      o.connect(g);g.connect(c.destination);
+      o.type='sine';o.frequency.setValueAtTime(880,now+offset);
+      g.gain.setValueAtTime(0,now+offset);
+      g.gain.linearRampToValueAtTime(0.3,now+offset+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001,now+offset+0.12);
+      o.start(now+offset);o.stop(now+offset+0.13);
+    });
+  }catch(e){}
+}
+
 function completedExercises(){
-  // an exercise is done if all its steps have been passed
   const doneEx=new Set();
   for(let i=0;i<qPos;i++){
     const q=queue[i];
@@ -196,7 +204,6 @@ function completedExercises(){
       if(q.stepIdx===ex.steps.length-1) doneEx.add(q.exIdx);
     }
   }
-  // also current if we just finished
   return doneEx;
 }
 
@@ -223,13 +230,11 @@ function renderList(){
 }
 
 function jumpToExercise(exIdx){
-  // find first queue item for this exercise
   const pos=queue.findIndex(q=>q.type==='exercise'&&q.exIdx===exIdx);
   if(pos>=0){qPos=pos;openCurrent();}
 }
 
 function startFromFirst(){
-  // find first incomplete exercise
   const doneEx=completedExercises();
   let startEx=0;
   for(let i=0;i<TOTAL_EX;i++){if(!doneEx.has(i)){startEx=i;break;}}
@@ -241,71 +246,68 @@ function openCurrent(){
   ovRunning=false;
   if(qPos>=queue.length){closeOverlay();return;}
   const item=queue[qPos];
-  if(item.type==='rest'){
-    showRest(item);
-  } else {
-    showExercise(item);
-  }
+  if(item.type==='rest'){showRest(item);}
+  else{showExercise(item);}
   document.getElementById('overlay').classList.add('visible');
 }
 
+function getNextLabel(){
+  const nextQ=queue[qPos+1];
+  if(!nextQ) return 'Last item';
+  if(nextQ.type==='rest'){
+    const afterRest=queue[qPos+2];
+    if(afterRest){
+      const ex=EX[afterRest.exIdx],st=ex.steps[afterRest.stepIdx];
+      return 'Next: '+(st.label?st.label+' — ':'')+ex.name;
+    }
+  } else {
+    const ex=EX[nextQ.exIdx],st=ex.steps[nextQ.stepIdx];
+    return 'Next: '+(st.label?st.label+' — ':'')+ex.name;
+  }
+  return '';
+}
+
 function showExercise(item){
-  const ex=EX[item.exIdx];
-  const st=ex.steps[item.stepIdx];
-  ovIsRest=false;
-  ovRem=st.secs; ovTotal=st.secs;
-  // step counter counts exercises not queue items
-  const exNum=item.exIdx+1;
-  document.getElementById('ov-step').textContent='Exercise '+exNum+' of '+TOTAL_EX;
+  const ex=EX[item.exIdx],st=ex.steps[item.stepIdx];
+  ovIsRest=false;ovRem=st.secs;ovTotal=st.secs;
+  document.getElementById('ov-step').textContent='Exercise '+(item.exIdx+1)+' of '+TOTAL_EX;
   document.getElementById('ov-name').textContent=ex.name;
-  document.getElementById('ov-side').textContent=st.label;
+  document.getElementById('ov-side').textContent=st.label||'';
   document.getElementById('ov-side').style.color=st.label?'var(--accent)':'transparent';
   document.getElementById('ov-cue').textContent=ex.cue;
   document.getElementById('ov-time').textContent=fmt(ovRem);
-  document.getElementById('ring').classList.remove('rest-color');
+  document.getElementById('ring').classList.remove('rest-ring');
   document.getElementById('ring').style.strokeDashoffset=0;
-  document.getElementById('ov-skip-btn').style.display='block';
-  if(routineStarted){ setTimeout(()=>startTimer(),400); }
-  // next label
-  const nextQ=queue[qPos+1];
-  if(nextQ){
-    if(nextQ.type==='rest'){
-      const afterRest=queue[qPos+2];
-      if(afterRest){
-        const aex=EX[afterRest.exIdx];
-        const ast=aex.steps[afterRest.stepIdx];
-        document.getElementById('ov-next').textContent='Next: '+(ast.label?ast.label+' — ':'')+aex.name;
-      }
-    }
-  } else {
-    document.getElementById('ov-next').textContent='Last exercise';
-  }
+  document.getElementById('ov-play').textContent=routineStarted?'Pause':'Start';
+  document.getElementById('ov-play').classList.remove('rest-btn');
+  document.getElementById('ov-next').textContent=getNextLabel();
+  document.getElementById('ov-skip-btn').textContent='Mark done & skip';
+  document.getElementById('ov-skip-btn').style.visibility='visible';
+  if(routineStarted) setTimeout(()=>startTimer(),400);
 }
 
 function showRest(item){
-  ovIsRest=true;
-  ovRem=REST_SECS; ovTotal=REST_SECS;
-  document.getElementById('ov-step').textContent='Rest';
-  // figure out what's next
+  ovIsRest=true;ovRem=REST_SECS;ovTotal=REST_SECS;
   const nextQ=queue[qPos+1];
-  let nextName='';
+  let nextName='',nextSide='';
   if(nextQ){
-    const ex=EX[nextQ.exIdx];
-    const st=ex.steps[nextQ.stepIdx];
-    nextName=(st.label?st.label+' — ':'')+ex.name;
-    document.getElementById('ov-name').textContent=ex.name;
-    document.getElementById('ov-side').textContent=st.label||'Get ready';
-    document.getElementById('ov-side').style.color='var(--rest)';
+    const ex=EX[nextQ.exIdx],st=ex.steps[nextQ.stepIdx];
+    nextName=ex.name;nextSide=st.label||'';
   }
+  document.getElementById('ov-step').textContent='Rest';
+  document.getElementById('ov-name').textContent=nextName;
+  document.getElementById('ov-side').textContent=nextSide||'Get ready';
+  document.getElementById('ov-side').style.color='var(--rest)';
   document.getElementById('ov-cue').textContent='Transition into position';
   document.getElementById('ov-time').textContent=fmt(ovRem);
-  document.getElementById('ring').classList.add('rest-color');
+  document.getElementById('ring').classList.add('rest-ring');
   document.getElementById('ring').style.strokeDashoffset=0;
-  document.getElementById('ov-play').textContent='Start';
-  document.getElementById('ov-next').textContent=nextName?'Up next: '+nextName:'';
-  document.getElementById('ov-skip-btn').style.display='none';
-  // auto-start rest
-  setTimeout(()=>{ if(ovIsRest) startTimer(); },300);
+  document.getElementById('ov-play').textContent='Pause';
+  document.getElementById('ov-play').classList.add('rest-btn');
+  document.getElementById('ov-next').textContent='';
+  document.getElementById('ov-skip-btn').textContent='Skip rest';
+  document.getElementById('ov-skip-btn').style.visibility='visible';
+  setTimeout(()=>startTimer(),300);
 }
 
 function startTimer(){
@@ -318,13 +320,11 @@ function startTimer(){
     document.getElementById('ring').style.strokeDashoffset=CIRC*(1-(ovRem/ovTotal));
     if(ovRem<=0){
       clearInterval(ovInterval);ovInterval=null;ovRunning=false;
+      if(!ovIsRest) playBeep();
       qPos++;
       renderList();
-      if(qPos>=queue.length){
-        setTimeout(()=>closeOverlay(),600);
-      } else {
-        setTimeout(()=>openCurrent(),400);
-      }
+      if(qPos>=queue.length){setTimeout(()=>closeOverlay(),600);}
+      else{setTimeout(()=>openCurrent(),400);}
     }
   },1000);
 }
@@ -343,21 +343,22 @@ function toggleTimer(){
 function skipCurrent(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
   ovRunning=false;
-  // skip to end of this exercise (all steps)
-  const item=queue[qPos];
-  if(item.type==='exercise'){
-    const exIdx=item.exIdx;
-    // advance past all steps of this exercise and their rests
-    while(qPos<queue.length){
-      const q=queue[qPos];
-      if(q.type==='exercise'&&q.exIdx===exIdx){qPos++;}
-      else if(q.type==='rest'){
-        // skip rest only if next exercise is same
-        const nxt=queue[qPos+1];
-        if(nxt&&nxt.type==='exercise'&&nxt.exIdx===exIdx){qPos++;}
-        else break;
-      } else break;
+  if(!ovIsRest){
+    const item=queue[qPos];
+    if(item.type==='exercise'){
+      const exIdx=item.exIdx;
+      while(qPos<queue.length){
+        const q=queue[qPos];
+        if(q.type==='exercise'&&q.exIdx===exIdx){qPos++;}
+        else if(q.type==='rest'){
+          const nxt=queue[qPos+1];
+          if(nxt&&nxt.type==='exercise'&&nxt.exIdx===exIdx){qPos++;}
+          else break;
+        } else break;
+      }
     }
+  } else {
+    qPos++;
   }
   renderList();
   if(qPos>=queue.length){closeOverlay();}
@@ -378,13 +379,12 @@ function resetAll(){
   renderList();
 }
 
-// STATS
 function calcStreaks(history){
   if(!history.length)return{current:0,longest:0};
   const sorted=[...new Set(history)].sort();
   let longest=1,run=1;
   for(let i=1;i<sorted.length;i++){
-    const diff=(new Date(sorted[i])-new Date(sorted[i-1]))/(86400000);
+    const diff=(new Date(sorted[i])-new Date(sorted[i-1]))/86400000;
     if(diff===1){run++;if(run>longest)longest=run;}else run=1;
   }
   const today=todayStr();
@@ -412,12 +412,9 @@ function showList(){
 }
 
 function renderStats(){
-  const history=loadHistory();
-  const histSet=new Set(history);
+  const history=loadHistory(),histSet=new Set(history);
   const{current,longest}=calcStreaks(history);
-  const total=history.length;
-  const weeks=total>0?Math.round(total/4.3):0;
-
+  const total=history.length,weeks=total>0?Math.round(total/4.3):0;
   const today=new Date();
   let calHTML='';
   ['M','T','W','T','F','S','S'].forEach(d=>{calHTML+='<div class="cal-dl">'+d+'</div>';});
@@ -430,7 +427,6 @@ function renderStats(){
     const hit=histSet.has(str),isToday=i===0;
     calHTML+='<div class="cal-cell'+(hit?' hit':'')+(isToday?' tod':'')+'"><span>'+d.getDate()+'</span></div>';
   }
-
   const recent=[...history].reverse().slice(0,20);
   let histHTML=recent.length?'':'<div class="empty">No sessions yet.<br>Complete your first routine<br>to start your streak.</div>';
   recent.forEach(d=>{
@@ -438,7 +434,6 @@ function renderStats(){
     const label=date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
     histHTML+='<div class="h-item"><span class="h-date">'+label+'</span><span class="h-badge">Done</span></div>';
   });
-
   document.getElementById('stats-content').innerHTML=
     '<div class="streak-cards">'+
       '<div class="s-card"><div class="s-val hi">'+current+'</div><div class="s-label">Current streak</div></div>'+
