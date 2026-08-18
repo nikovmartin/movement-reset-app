@@ -14,18 +14,24 @@
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.14);
   --text:#f0f0f0;--text2:#888;--text3:#484848;
   --accent:#c8f0d8;--accent-dim:rgba(200,240,216,0.1);--accent-text:#1a4a2e;
-  --rest:#f0d8a8;--rest-dim:rgba(240,216,168,0.1);--rest-text:#4a3a1a;
+  --rest:#f0d8a8;--rest-text:#4a3a1a;
   --r:12px;--rs:8px;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
 body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill-available}
 .screen{display:none;flex-direction:column;flex:1;overflow:hidden}
 .screen.active{display:flex}
+
+/* NAV */
 .nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;padding-top:calc(12px + env(safe-area-inset-top));border-bottom:.5px solid var(--border);flex-shrink:0}
 .nav-title{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2)}
 .nav-tab{font-size:13px;color:var(--text2);cursor:pointer;padding:4px 8px;border-radius:var(--rs);-webkit-tap-highlight-color:transparent}
+
+/* PROGRESS */
 .prog-wrap{height:2px;background:var(--border);flex-shrink:0}
 .prog-fill{height:100%;background:var(--accent);transition:width .4s ease;width:0%}
+
+/* LIST */
 .list-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 0 110px}
 .exercise{display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:.5px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
 .ex-check{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;color:var(--text2);font-weight:500;transition:all .2s}
@@ -36,10 +42,14 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .ex-cue{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.4}
 .ex-duration{font-size:13px;font-weight:500;color:var(--text2);font-variant-numeric:tabular-nums;flex-shrink:0}
 .exercise.done .ex-duration{color:var(--text3)}
+
+/* BOTTOM BAR */
 .bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:.5px solid var(--border);padding:12px 20px;padding-bottom:calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center}
 .btn-sec{padding:12px 16px;background:var(--surface);border:.5px solid var(--border2);border-radius:var(--rs);color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;flex-shrink:0}
 .btn-pri{flex:1;padding:12px;background:var(--accent);border:none;border-radius:var(--rs);color:var(--accent-text);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .done-ct{font-size:12px;color:var(--text3);white-space:nowrap;flex-shrink:0}
+
+/* TIMER OVERLAY */
 .overlay{display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:24px;padding-top:calc(32px + env(safe-area-inset-top));padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 .overlay.visible{display:flex}
 .ov-step{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
@@ -59,6 +69,19 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .ov-btn-pri{background:var(--accent);color:var(--accent-text);flex:2}
 .ov-btn-pri.rest-btn{background:var(--rest);color:var(--rest-text)}
 .ov-skip{margin-top:14px;font-size:13px;color:var(--text3);cursor:pointer;padding:8px;-webkit-tap-highlight-color:transparent;min-height:36px;display:flex;align-items:center;justify-content:center}
+
+/* COMPLETE OVERLAY */
+.complete-overlay{display:none;position:fixed;inset:0;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;z-index:200;padding:32px;padding-top:calc(40px + env(safe-area-inset-top));padding-bottom:calc(32px + env(safe-area-inset-bottom))}
+.complete-overlay.visible{display:flex}
+.complete-icon{font-size:56px;margin-bottom:20px}
+.complete-title{font-size:26px;font-weight:600;color:var(--text);margin-bottom:8px}
+.complete-sub{font-size:15px;color:var(--text2);margin-bottom:40px}
+.complete-time-card{background:var(--surface);border-radius:var(--r);padding:24px 40px;text-align:center;margin-bottom:40px;border:.5px solid var(--border2)}
+.complete-time-val{font-size:48px;font-weight:300;color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.complete-time-label{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-top:6px}
+.complete-btn{width:100%;max-width:310px;padding:14px;background:var(--accent);border:none;border-radius:var(--rs);color:var(--accent-text);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+
+/* STATS */
 .stats-wrap{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:20px 20px 100px}
 .streak-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:24px}
 .s-card{background:var(--surface);border-radius:var(--r);padding:16px;text-align:center}
@@ -76,12 +99,15 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .history-list{display:flex;flex-direction:column;gap:8px}
 .h-item{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--surface);border-radius:var(--rs)}
 .h-date{font-size:14px;color:var(--text)}
+.h-right{display:flex;align-items:center;gap:8px}
+.h-time{font-size:12px;color:var(--text2)}
 .h-badge{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:var(--accent-dim);color:var(--accent)}
 .empty{text-align:center;padding:48px 20px;color:var(--text3);font-size:14px;line-height:1.6}
 </style>
 </head>
 <body>
 
+<!-- LIST SCREEN -->
 <div class="screen active" id="screen-list">
   <div class="nav">
     <span class="nav-title">Movement Reset</span>
@@ -91,11 +117,12 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   <div class="list-wrap" id="list"></div>
   <div class="bottom-bar">
     <button class="btn-sec" onclick="resetAll()">Reset</button>
-    <span class="done-ct" id="done-ct">0 / 15</span>
+    <span class="done-ct" id="done-ct">0 / 14</span>
     <button class="btn-pri" id="btn-go" onclick="startFromFirst()">Start routine</button>
   </div>
 </div>
 
+<!-- STATS SCREEN -->
 <div class="screen" id="screen-stats">
   <div class="nav">
     <span class="nav-tab" onclick="showList()">Back</span>
@@ -105,8 +132,9 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   <div class="stats-wrap" id="stats-content"></div>
 </div>
 
+<!-- TIMER OVERLAY -->
 <div class="overlay" id="overlay">
-  <div class="ov-step" id="ov-step">Exercise 1 of 15</div>
+  <div class="ov-step" id="ov-step">Exercise 1 of 14</div>
   <div class="ov-name" id="ov-name"></div>
   <div class="ov-side" id="ov-side"></div>
   <div class="ov-cue" id="ov-cue"></div>
@@ -125,27 +153,39 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   <div class="ov-skip" id="ov-skip-btn" onclick="skipCurrent()">Mark done &amp; skip</div>
 </div>
 
+<!-- COMPLETE OVERLAY -->
+<div class="complete-overlay" id="complete-overlay">
+  <div class="complete-icon">✦</div>
+  <div class="complete-title">Session complete</div>
+  <div class="complete-sub">Great work. Time to rest.</div>
+  <div class="complete-time-card">
+    <div class="complete-time-val" id="complete-time">0:00</div>
+    <div class="complete-time-label">Total session time</div>
+  </div>
+  <button class="complete-btn" onclick="finishSession()">Done</button>
+</div>
+
 <script>
 const CIRC=521;
 const SK='mvmt_v4';
 const REST_SECS=10;
-const TOTAL_EX=15;
+const TOTAL_EX=14;
 
 const EX=[
-  {name:'Thoracic extension on foam roller',cue:'Segment by segment — pause at tight spots',steps:[{label:'',secs:60}]},
-  {name:'Dead hang',cue:'Fully passive — let everything decompress',steps:[{label:'',secs:30}]},
-  {name:'Doorframe overhead reach',cue:'Ribs down, lean chest through, feel the lats',steps:[{label:'',secs:60}]},
-  {name:"Child's pose side stretch",cue:'Walk hands to each side, feel the lateral line lengthen',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-  {name:'Supine thoracic rotation',cue:'Control the rotation, keep hips still',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-  {name:'Neck releases',cue:'Three directions — forward, left, right. Slow and gentle',steps:[{label:'',secs:60}]},
-  {name:'90/90 hip rotations',cue:'6 each side, slow — stay active not passive',steps:[{label:'',secs:60}]},
-  {name:'Couch stretch',cue:'Glute squeezed, ribs down — no lumbar flare',steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
-  {name:'Figure 4 on box',cue:'Chest toward shin, spine long throughout',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-  {name:'Cossack squat hold',cue:'Sit deep into one side, other leg straight — chest up, heel down',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-  {name:'Knee-over-toe rocks',cue:'Heel glued down, slow — feel dorsiflexion loading',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-  {name:'Soleus stretch',cue:'Knee bent, torso upright — different target than standing calf stretch',steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-  {name:'Deep squat hold',cue:'Heels elevated if needed — work toward flat over time',steps:[{label:'',secs:60}]},
-  {name:'Jefferson curl',cue:'6 slow reps — vertebra by vertebra, fully bodyweight',steps:[{label:'',secs:75}]},
+  {name:'Thoracic extension on foam roller', cue:'Segment by segment — pause at tight spots', steps:[{label:'',secs:60}]},
+  {name:'Dead hang', cue:'Fully passive — let everything decompress', steps:[{label:'',secs:30}]},
+  {name:'Doorframe overhead reach', cue:'Ribs down, lean chest through, feel the lats', steps:[{label:'',secs:60}]},
+  {name:"Child's pose side stretch", cue:'Walk hands to each side, feel the lateral line lengthen', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Supine thoracic rotation', cue:'Control the rotation, keep hips still', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Neck releases', cue:'Three directions — forward, left, right. Slow and gentle', steps:[{label:'',secs:60}]},
+  {name:'90/90 hip rotations', cue:'6 each side, slow — stay active not passive', steps:[{label:'',secs:60}]},
+  {name:'Couch stretch', cue:'Glute squeezed, ribs down — no lumbar flare', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
+  {name:'Figure 4 on box', cue:'Chest toward shin, spine long throughout', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Cossack squat hold', cue:'Sit deep into one side, other leg straight — chest up, heel down', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Knee-over-toe rocks', cue:'Heel glued down, slow — feel dorsiflexion loading', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Soleus stretch', cue:'Knee bent, torso upright — different target than standing calf stretch', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+  {name:'Deep squat hold', cue:'Heels elevated if needed — work toward flat over time', steps:[{label:'',secs:60}]},
+  {name:'Jefferson curl', cue:'6 slow reps — vertebra by vertebra, fully bodyweight', steps:[{label:'',secs:75}]},
 ];
 
 let queue=[];
@@ -156,12 +196,11 @@ let ovRem=0;
 let ovTotal=0;
 let ovIsRest=false;
 let routineStarted=false;
+let sessionStart=null;
 let audioCtx=null;
 
 function getAudioCtx(){
-  if(!audioCtx||audioCtx.state==='closed'){
-    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-  }
+  if(!audioCtx||audioCtx.state==='closed') audioCtx=new(window.AudioContext||window.webkitAudioContext)();
   if(audioCtx.state==='suspended') audioCtx.resume();
   return audioCtx;
 }
@@ -186,7 +225,7 @@ function buildQueue(){
   EX.forEach((ex,ei)=>{
     ex.steps.forEach((st,si)=>{
       queue.push({type:'exercise',exIdx:ei,stepIdx:si});
-      queue.push({type:'rest',nextExIdx:ei,nextStepIdx:si+1});
+      queue.push({type:'rest'});
     });
   });
   if(queue[queue.length-1]?.type==='rest') queue.pop();
@@ -195,7 +234,19 @@ function buildQueue(){
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function loadHistory(){try{return JSON.parse(localStorage.getItem(SK))||[];}catch(e){return[];}}
 function saveHistory(h){try{localStorage.setItem(SK,JSON.stringify(h));}catch(e){}}
-function markToday(){const h=loadHistory(),t=todayStr();if(!h.includes(t)){h.push(t);saveHistory(h);}}
+
+function markToday(elapsed){
+  const h=loadHistory(),t=todayStr();
+  const existing=h.find(e=>e.date===t);
+  if(!existing) h.push({date:t,duration:elapsed});
+  saveHistory(h);
+}
+
+function fmtTime(s){
+  s=Math.max(0,s);
+  const m=Math.floor(s/60),sc=s%60;
+  return m+':'+String(sc).padStart(2,'0');
+}
 function fmt(s){s=Math.max(0,s);const m=Math.floor(s/60),sc=s%60;return m>0?m+':'+String(sc).padStart(2,'0'):String(sc);}
 
 function completedExercises(){
@@ -220,7 +271,8 @@ function renderList(){
     div.className='exercise'+(isDone?' done':'');
     div.onclick=()=>jumpToExercise(i);
     const dur=ex.steps.length>1?(ex.steps[0].secs+' sec each side'):(ex.steps[0].secs+' sec');
-    div.innerHTML='<div class="ex-check">'+(isDone?'&#10003;':(i+1))+'</div>'+
+    div.innerHTML=
+      '<div class="ex-check">'+(isDone?'&#10003;':(i+1))+'</div>'+
       '<div class="ex-body"><div class="ex-name">'+ex.name+'</div><div class="ex-cue">'+ex.cue+'</div></div>'+
       '<div class="ex-duration">'+dur+'</div>';
     list.appendChild(div);
@@ -229,7 +281,6 @@ function renderList(){
   document.getElementById('progress').style.width=pct+'%';
   document.getElementById('done-ct').textContent=doneEx.size+' / '+TOTAL_EX;
   document.getElementById('btn-go').textContent=doneEx.size===TOTAL_EX?'Complete!':(doneEx.size>0?'Continue':'Start routine');
-  if(doneEx.size===TOTAL_EX) markToday();
 }
 
 function jumpToExercise(exIdx){
@@ -247,25 +298,20 @@ function startFromFirst(){
 function openCurrent(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
   ovRunning=false;
-  if(qPos>=queue.length){closeOverlay();return;}
+  if(qPos>=queue.length){showComplete();return;}
   const item=queue[qPos];
-  if(item.type==='rest'){showRest(item);}
-  else{showExercise(item);}
+  if(item.type==='rest') showRest();
+  else showExercise(item);
   document.getElementById('overlay').classList.add('visible');
 }
 
 function getNextLabel(){
-  const nextQ=queue[qPos+1];
-  if(!nextQ) return '';
-  if(nextQ.type==='rest'){
-    const afterRest=queue[qPos+2];
-    if(afterRest){
-      const ex=EX[afterRest.exIdx],st=ex.steps[afterRest.stepIdx];
+  for(let i=qPos+1;i<queue.length;i++){
+    if(queue[i].type==='exercise'){
+      const ex=EX[queue[i].exIdx],st=ex.steps[queue[i].stepIdx];
       return 'Next: '+(st.label?st.label+' — ':'')+ex.name;
     }
-  } else {
-    const ex=EX[nextQ.exIdx],st=ex.steps[nextQ.stepIdx];
-    return 'Next: '+(st.label?st.label+' — ':'')+ex.name;
+    break;
   }
   return '';
 }
@@ -289,17 +335,16 @@ function showExercise(item){
   if(routineStarted) setTimeout(()=>startTimer(),400);
 }
 
-function showRest(item){
+function showRest(){
   ovIsRest=true;ovRem=REST_SECS;ovTotal=REST_SECS;
-  const nextQ=queue[qPos+1];
-  let nextName='',nextSide='';
-  if(nextQ){
-    const ex=EX[nextQ.exIdx],st=ex.steps[nextQ.stepIdx];
-    nextName=ex.name;nextSide=st.label||'';
+  // find next exercise
+  let nextEx=null,nextSt=null;
+  for(let i=qPos+1;i<queue.length;i++){
+    if(queue[i].type==='exercise'){nextEx=EX[queue[i].exIdx];nextSt=nextEx.steps[queue[i].stepIdx];break;}
   }
   document.getElementById('ov-step').textContent='Rest';
-  document.getElementById('ov-name').textContent=nextName;
-  document.getElementById('ov-side').textContent=nextSide||'Get ready';
+  document.getElementById('ov-name').textContent=nextEx?nextEx.name:'';
+  document.getElementById('ov-side').textContent=nextSt&&nextSt.label?nextSt.label:'Get ready';
   document.getElementById('ov-side').style.color='var(--rest)';
   document.getElementById('ov-cue').textContent='Transition into position';
   document.getElementById('ov-time').textContent=fmt(ovRem);
@@ -323,10 +368,9 @@ function startTimer(){
     document.getElementById('ring').style.strokeDashoffset=CIRC*(1-(ovRem/ovTotal));
     if(ovRem<=0){
       clearInterval(ovInterval);ovInterval=null;ovRunning=false;
-      if(!ovIsRest) playBeep();
+      if(!ovIsRest){playBeep();renderList();}
       qPos++;
-      renderList();
-      if(qPos>=queue.length){setTimeout(()=>closeOverlay(),600);}
+      if(qPos>=queue.length){setTimeout(()=>showComplete(),500);}
       else{setTimeout(()=>openCurrent(),400);}
     }
   },1000);
@@ -337,9 +381,8 @@ function toggleTimer(){
     clearInterval(ovInterval);ovInterval=null;ovRunning=false;
     document.getElementById('ov-play').textContent='Resume';
   } else {
+    if(!routineStarted){routineStarted=true;sessionStart=Date.now();getAudioCtx();}
     if(ovRem<=0){ovRem=ovTotal;document.getElementById('ring').style.strokeDashoffset=0;}
-    routineStarted=true;
-    getAudioCtx();
     startTimer();
   }
 }
@@ -347,45 +390,60 @@ function toggleTimer(){
 function skipCurrent(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
   ovRunning=false;
-  if(!ovIsRest){
-    const item=queue[qPos];
-    if(item.type==='exercise'){
-      const exIdx=item.exIdx;
-      while(qPos<queue.length){
-        const q=queue[qPos];
-        if(q.type==='exercise'&&q.exIdx===exIdx){qPos++;}
-        else if(q.type==='rest'){
-          const nxt=queue[qPos+1];
-          if(nxt&&nxt.type==='exercise'&&nxt.exIdx===exIdx){qPos++;}
-          else break;
-        } else break;
-      }
-    }
-  } else {
+  if(ovIsRest){
     qPos++;
+  } else {
+    const exIdx=queue[qPos].exIdx;
+    while(qPos<queue.length){
+      const q=queue[qPos];
+      if(q.type==='exercise'&&q.exIdx===exIdx){qPos++;}
+      else if(q.type==='rest'){
+        const nxt=queue[qPos+1];
+        if(nxt&&nxt.type==='exercise'&&nxt.exIdx===exIdx){qPos++;}
+        else break;
+      } else break;
+    }
+    renderList();
   }
-  renderList();
-  if(qPos>=queue.length){closeOverlay();}
+  if(qPos>=queue.length){showComplete();}
   else{openCurrent();}
+}
+
+function showComplete(){
+  if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
+  ovRunning=false;
+  document.getElementById('overlay').classList.remove('visible');
+  const elapsed=sessionStart?Math.round((Date.now()-sessionStart)/1000):0;
+  document.getElementById('complete-time').textContent=fmtTime(elapsed);
+  markToday(elapsed);
+  renderList();
+  document.getElementById('complete-overlay').classList.add('visible');
+}
+
+function finishSession(){
+  document.getElementById('complete-overlay').classList.remove('visible');
+  routineStarted=false;sessionStart=null;qPos=0;
+  renderList();
 }
 
 function closeOverlay(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
-  ovRunning=false;routineStarted=false;
+  ovRunning=false;
   document.getElementById('overlay').classList.remove('visible');
   renderList();
 }
 
 function resetAll(){
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
-  ovRunning=false;qPos=0;routineStarted=false;
+  ovRunning=false;qPos=0;routineStarted=false;sessionStart=null;
   document.getElementById('overlay').classList.remove('visible');
+  document.getElementById('complete-overlay').classList.remove('visible');
   renderList();
 }
 
 function calcStreaks(history){
   if(!history.length)return{current:0,longest:0};
-  const sorted=[...new Set(history)].sort();
+  const sorted=[...new Set(history.map(e=>e.date))].sort();
   let longest=1,run=1;
   for(let i=1;i<sorted.length;i++){
     const diff=(new Date(sorted[i])-new Date(sorted[i-1]))/86400000;
@@ -416,7 +474,7 @@ function showList(){
 }
 
 function renderStats(){
-  const history=loadHistory(),histSet=new Set(history);
+  const history=loadHistory(),histSet=new Set(history.map(e=>e.date));
   const{current,longest}=calcStreaks(history);
   const total=history.length,weeks=total>0?Math.round(total/4.3):0;
   const today=new Date();
@@ -433,10 +491,11 @@ function renderStats(){
   }
   const recent=[...history].reverse().slice(0,20);
   let histHTML=recent.length?'':'<div class="empty">No sessions yet.<br>Complete your first routine<br>to start your streak.</div>';
-  recent.forEach(d=>{
-    const date=new Date(d+'T12:00:00');
+  recent.forEach(e=>{
+    const date=new Date(e.date+'T12:00:00');
     const label=date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-    histHTML+='<div class="h-item"><span class="h-date">'+label+'</span><span class="h-badge">Done</span></div>';
+    const dur=e.duration?fmtTime(e.duration):'—';
+    histHTML+='<div class="h-item"><span class="h-date">'+label+'</span><div class="h-right"><span class="h-time">'+dur+'</span><span class="h-badge">Done</span></div></div>';
   });
   document.getElementById('stats-content').innerHTML=
     '<div class="streak-cards">'+
