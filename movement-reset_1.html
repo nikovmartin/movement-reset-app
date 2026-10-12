@@ -27,6 +27,12 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .nav-title{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text2)}
 .nav-tab{font-size:13px;color:var(--text2);cursor:pointer;padding:4px 8px;border-radius:var(--rs);-webkit-tap-highlight-color:transparent}
 
+/* ROUTINE TABS */
+.rt-tabs{display:flex;gap:6px;padding:10px 20px;border-bottom:.5px solid var(--border);flex-shrink:0}
+.rt-tab{flex:1;padding:9px 4px;border-radius:var(--rs);background:var(--surface);color:var(--text2);font-size:13px;font-weight:600;text-align:center;cursor:pointer;-webkit-tap-highlight-color:transparent;border:.5px solid transparent}
+.rt-tab.on{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,240,216,.3)}
+.rt-sub{font-size:12px;color:var(--text2);padding:10px 20px 0;line-height:1.4}
+
 /* PROGRESS */
 .prog-wrap{height:2px;background:var(--border);flex-shrink:0}
 .prog-fill{height:100%;background:var(--accent);transition:width .4s ease;width:0%}
@@ -113,6 +119,8 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
     <span class="nav-title">Movement Reset</span>
     <span class="nav-tab" onclick="showStats()">Streaks</span>
   </div>
+  <div class="rt-tabs" id="rt-tabs"></div>
+  <div class="rt-sub" id="rt-sub"></div>
   <div class="prog-wrap"><div class="prog-fill" id="progress"></div></div>
   <div class="list-wrap" id="list"></div>
   <div class="bottom-bar">
@@ -126,7 +134,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 <div class="screen" id="screen-stats">
   <div class="nav">
     <span class="nav-tab" onclick="showList()">Back</span>
-    <span class="nav-title">Streaks</span>
+    <span class="nav-title" id="stats-title">Streaks</span>
     <span style="width:48px"></span>
   </div>
   <div class="stats-wrap" id="stats-content"></div>
@@ -157,7 +165,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 <div class="complete-overlay" id="complete-overlay">
   <div class="complete-icon">✦</div>
   <div class="complete-title">Session complete</div>
-  <div class="complete-sub">Great work. Time to rest.</div>
+  <div class="complete-sub" id="complete-sub">Great work. Time to rest.</div>
   <div class="complete-time-card">
     <div class="complete-time-val" id="complete-time">0:00</div>
     <div class="complete-time-label">Total session time</div>
@@ -165,32 +173,123 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   <button class="complete-btn" onclick="finishSession()">Done</button>
 </div>
 
-<audio id="beep-audio" preload="auto" src="data:audio/wav;base64,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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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" type="audio/wav"></audio>
 
 <script>
 const CIRC=521;
-const SK='mvmt_v4';
-const REST_SECS=10;
-const TOTAL_EX=16;
 
-const EX=[
-  {name:'Neck releases', cue:'Three directions — forward, left, right. Slow and gentle', steps:[{label:'',secs:60}]},
-  {name:'Wrist prep', cue:'Slow circles, then a gentle extension and flexion stretch — no forcing', steps:[{label:'',secs:45}]},
-  {name:'Cat-Cow into Thread-the-Needle', cue:'Round and arch through cat-cow, then rotate open into thread-the-needle', steps:[{label:'Cat-Cow',secs:30},{label:'Left side',secs:30},{label:'Right side',secs:30}]},
-  {name:"World's Greatest Stretch", cue:'Lunge, rotate open through the t-spine, reach tall — hip flexor, hamstring, spine, shoulder in one flow', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
-  {name:'Thoracic extension on foam roller', cue:'Segment by segment — pause at tight spots', steps:[{label:'',secs:60}]},
-  {name:'Dead hang', cue:'Fully passive — let everything decompress', steps:[{label:'',secs:30}]},
-  {name:'Downward Dog with calf pedals', cue:'Weight through the hands, pedal the heels one at a time — hamstring, calf, shoulder, and wrist all in one shape', steps:[{label:'',secs:60}]},
-  {name:'Doorway chest stretch', cue:'Forearm on the frame, step through and rotate away — opens the chest, opposite direction from the hands-down work', steps:[{label:'',secs:30}]},
-  {name:'Wall Angels', cue:'Back flat to the wall, slide arms up and down — drive shoulder extension and external rotation', steps:[{label:'',secs:60}]},
-  {name:'90/90 hip switches', cue:'Continuously rotate the hips in and out, both directions — control, not momentum', steps:[{label:'',secs:60}]},
-  {name:'Figure 4 stretch', cue:'Ankle across the opposite knee, hinge forward keeping the spine long — targets the glute and outer hip', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-  {name:'Couch stretch', cue:'Back shin flat against the wall, glute squeezed, ribs down, torso tall — feel it in the front hip, not the lower back', steps:[{label:'Left side',secs:60},{label:'Right side',secs:60}]},
-  {name:'Knee-over-toe rocks', cue:'Heel glued down, slow — finish with a brief hold for the soleus', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-  {name:'Cossack squat (held-support)', cue:'Hold onto a support for balance, sit deep and keep the heel down — build depth over time', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-  {name:'Deep squat hold', cue:'Heels elevated or supported is fine — work toward flat over time', steps:[{label:'',secs:60}]},
-  {name:'Jefferson curl', cue:'6 slow reps — vertebra by vertebra, fully bodyweight', steps:[{label:'',secs:75}]},
-];
+const ROUTINES={
+  morning:{tab:'Morning',key:'mvmt_morning_v1',rest:5,done:'Body is awake. Have a good day.',
+    sub:'Primer, about 7 min. Gentle first, then build up: rotate, flow, swing, bounce.',
+    ex:[
+      {name:'Neck releases', cue:'Three directions — forward, left, right. Slow and gentle', steps:[{label:'',secs:30}]},
+      {name:'Wrist prep', cue:'Slow circles, then a gentle extension and flexion stretch — no forcing', steps:[{label:'',secs:30}]},
+      {name:'Cat-Cow into Thread-the-Needle', cue:'Round and arch through cat-cow, then rotate open into thread-the-needle', steps:[{label:'Cat-Cow',secs:30},{label:'Left side',secs:30},{label:'Right side',secs:30}]},
+      {name:'Down dog to up dog flow', cue:'Flow slowly between the two — exhale back to down dog, inhale forward to up dog', steps:[{label:'',secs:60}]},
+      {name:'Standing hip circles', cue:'Knee lifts up, opens out and around — slow, both directions, tall posture', steps:[{label:'',secs:30}]},
+      {name:'Leg swings', cue:'Hand on a wall: 10 front-to-back, then 10 side-to-side — relaxed, growing range', steps:[{label:'Left leg',secs:30},{label:'Right leg',secs:30}]},
+      {name:'Arm circles + spinal rotations', cue:'Big arm circles both directions, then relaxed standing twists letting the arms swing', steps:[{label:'',secs:30}]},
+      {name:'Shake-out', cue:'Loose shaking from hands to shoulders, then legs one at a time — let everything jiggle', steps:[{label:'',secs:30}]},
+      {name:'Pogo bounces', cue:'Small, quiet, springy hops on the balls of the feet — knees soft, arches up, ankles doing the work', steps:[{label:'',secs:30}]},
+    ]},
+  evening:{tab:'Evening',key:'mvmt_v4',rest:10,done:'Great work. Time to rest.',
+    sub:'Reset, about 14 min. Undo the sitting, wake up the feet, loosen ankles and hips. Right side gets extra time.',
+    ex:[
+      {name:'Thoracic extension on foam roller', cue:'Segment by segment — pause at tight spots', steps:[{label:'',secs:45}]},
+      {name:'90/90 hip switches', cue:'Continuously rotate the hips in and out, both directions — control, not momentum', steps:[{label:'',secs:60}]},
+      {name:'Figure 4 stretch', cue:'Ankle across the opposite knee, hinge forward keeping the spine long — targets the glute and outer hip', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+      {name:'Couch stretch', cue:'Back shin flat against the wall, glute squeezed, ribs down, torso tall — feel it in the front hip, not the lower back', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+      {name:"World's Greatest Stretch", cue:'Lunge, rotate open through the t-spine, reach tall — hip flexor, hamstring, spine, shoulder in one flow', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
+      {name:'Downward Dog with calf pedals', cue:'Weight through the hands, pedal the heels one at a time — hamstring, calf, shoulder, and wrist all in one shape', steps:[{label:'',secs:60}]},
+      {name:'Toe yoga', cue:'Seated or standing, barefoot: lift only the big toe, then press the big toe down and lift the other four. Alternate slowly', steps:[{label:'',secs:45}]},
+      {name:'Short foot', cue:'Barefoot, standing: draw the ball of the foot toward the heel to dome the arch, toes stay long and relaxed. Hold 5 s, release, repeat', steps:[{label:'Right foot',secs:45},{label:'Left foot',secs:30},{label:'Right foot, on one leg',secs:30}]},
+      {name:'Knee-over-toe rocks', cue:'Hold the short-foot arch. Knee travels over the 2nd–3rd toe (aim toward the little-toe side). Go only as far as the arch holds — that is your real range', steps:[{label:'Right side',secs:60},{label:'Left side',secs:45}]},
+      {name:'Deep squat hold', cue:'Heels elevated or supported is fine — arches up, knees out over the toes. Work toward flat over time', steps:[{label:'',secs:60}]},
+    ]},
+};
+// Friday long = evening reset plus the five longer pieces, slotted where they fit
+(function(){
+  const e=ROUTINES.evening.ex;
+  const hang={name:'Dead hang', cue:'Fully passive — let everything decompress', steps:[{label:'',secs:30}]};
+  const door={name:'Doorway chest stretch', cue:'Forearm on the frame, step through and rotate away — opens the chest, opposite direction from the hands-down work', steps:[{label:'',secs:30}]};
+  const angels={name:'Wall Angels', cue:'Back flat to the wall, slide arms up and down — drive shoulder extension and external rotation', steps:[{label:'',secs:60}]};
+  const jeff={name:'Jefferson curl', cue:'6 slow reps — vertebra by vertebra, fully bodyweight', steps:[{label:'',secs:75}]};
+  const coss={name:'Cossack squat (held-support)', cue:'Hold onto a support for balance, sit deep and keep the heel down — build depth over time', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]};
+  ROUTINES.long={tab:'Friday long',key:'mvmt_v4',rest:10,done:'Great work. Enjoy the rest day.',
+    sub:'Rest-day version, about 20 min. Evening reset plus hang, chest, shoulders, Jefferson and Cossack.',
+    ex:[hang,door,angels,e[0],e[1],e[2],e[3],e[4],jeff,e[5],e[6],e[7],e[8],coss,e[9]]};
+})();
+
+let RK=pickDefault();
+let EX=ROUTINES[RK].ex;
+let TOTAL_EX=EX.length;
+let REST_SECS=ROUTINES[RK].rest;
+let SK=ROUTINES[RK].key;
+
+function pickDefault(){
+  // After midnight (before 04:00) still counts as the previous evening
+  const d=new Date(),h=d.getHours();
+  if(h>=4&&h<14) return 'morning';
+  const day=h<4?(d.getDay()+6)%7:d.getDay();
+  return day===5?'long':'evening';
+}
+
+function renderTabs(){
+  const wrap=document.getElementById('rt-tabs');wrap.innerHTML='';
+  ['morning','evening','long'].forEach(k=>{
+    const t=document.createElement('div');
+    t.className='rt-tab'+(k===RK?' on':'');t.textContent=ROUTINES[k].tab;
+    t.onclick=()=>switchRoutine(k);wrap.appendChild(t);
+  });
+  document.getElementById('rt-sub').textContent=ROUTINES[RK].sub;
+}
+
+function switchRoutine(k){
+  if(k===RK) return;
+  if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
+  ovRunning=false;routineStarted=false;sessionStart=null;qPos=0;
+  RK=k;EX=ROUTINES[k].ex;TOTAL_EX=EX.length;REST_SECS=ROUTINES[k].rest;SK=ROUTINES[k].key;
+  buildQueue();renderTabs();renderList();
+}
+
+/* ---- Sound: generated with Web Audio (the old embedded file was corrupted) ---- */
+let actx=null;
+function unlockAudio(){
+  try{
+    if(navigator.audioSession) navigator.audioSession.type='playback'; // iOS 17+: play even with the silent switch on
+  }catch(e){}
+  try{
+    if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;actx=new C();}
+    if(actx.state!=='running') actx.resume();
+    const b=actx.createBuffer(1,1,22050),s=actx.createBufferSource();
+    s.buffer=b;s.connect(actx.destination);s.start(0);
+  }catch(e){}
+}
+function tone(freq,start,dur){
+  const o=actx.createOscillator(),g=actx.createGain();
+  o.type='sine';o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,start);
+  g.gain.exponentialRampToValueAtTime(0.5,start+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,start+dur);
+  o.connect(g);g.connect(actx.destination);o.start(start);o.stop(start+dur+0.05);
+}
+function playBeep(kind){
+  try{
+    if(!actx) return;
+    if(actx.state!=='running') actx.resume();
+    const t=actx.currentTime+0.02;
+    if(kind==='go'){tone(1175,t,0.18);}            // rest over: start moving
+    else if(kind==='tick'){tone(660,t,0.08);}       // 3-2-1 countdown
+    else {tone(880,t,0.16);tone(880,t+0.22,0.16);}  // exercise done
+  }catch(e){}
+}
+// Unlock on the first touch anywhere (iOS requires a user gesture)
+['touchend','click'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true}));
+
+/* ---- Keep the screen awake during a session ---- */
+let wakeLock=null;
+async function keepAwake(){try{if('wakeLock' in navigator&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}}catch(e){}}
+function releaseAwake(){try{if(wakeLock){wakeLock.release();wakeLock=null;}}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&routineStarted)keepAwake();});
 
 let queue=[];
 let qPos=0;
@@ -201,21 +300,6 @@ let ovTotal=0;
 let ovIsRest=false;
 let routineStarted=false;
 let sessionStart=null;
-const beepAudio=document.getElementById('beep-audio');
-
-function unlockAudio(){
-  try{
-    beepAudio.play().then(()=>{beepAudio.pause();beepAudio.currentTime=0;}).catch(()=>{});
-  }catch(e){}
-}
-
-function playBeep(){
-  try{
-    beepAudio.currentTime=0;
-    beepAudio.play().catch(()=>{});
-  }catch(e){}
-}
-
 function buildQueue(){
   queue=[];
   EX.forEach((ex,ei)=>{
@@ -365,9 +449,11 @@ function startTimer(){
     ovRem--;
     document.getElementById('ov-time').textContent=fmt(ovRem);
     document.getElementById('ring').style.strokeDashoffset=CIRC*(1-(ovRem/ovTotal));
+    if(ovRem>0&&ovRem<=3&&!ovIsRest) playBeep('tick');
     if(ovRem<=0){
       clearInterval(ovInterval);ovInterval=null;ovRunning=false;
-      if(!ovIsRest){playBeep();renderList();}
+      if(ovIsRest){playBeep('go');}
+      else{playBeep('done');renderList();}
       qPos++;
       if(qPos>=queue.length){setTimeout(()=>showComplete(),500);}
       else{setTimeout(()=>openCurrent(),400);}
@@ -380,7 +466,7 @@ function toggleTimer(){
     clearInterval(ovInterval);ovInterval=null;ovRunning=false;
     document.getElementById('ov-play').textContent='Resume';
   } else {
-    if(!routineStarted){routineStarted=true;sessionStart=Date.now();unlockAudio();}
+    if(!routineStarted){routineStarted=true;sessionStart=Date.now();unlockAudio();keepAwake();}
     if(ovRem<=0){ovRem=ovTotal;document.getElementById('ring').style.strokeDashoffset=0;}
     startTimer();
   }
@@ -415,6 +501,8 @@ function showComplete(){
   const elapsed=sessionStart?Math.round((Date.now()-sessionStart)/1000):0;
   document.getElementById('complete-time').textContent=fmtTime(elapsed);
   markToday(elapsed);
+  releaseAwake();
+  document.getElementById('complete-sub').textContent=ROUTINES[RK].done;
   renderList();
   document.getElementById('complete-overlay').classList.add('visible');
 }
@@ -426,6 +514,7 @@ function finishSession(){
 }
 
 function closeOverlay(){
+  releaseAwake();
   if(ovInterval){clearInterval(ovInterval);ovInterval=null;}
   ovRunning=false;
   document.getElementById('overlay').classList.remove('visible');
@@ -440,23 +529,30 @@ function resetAll(){
   renderList();
 }
 
+// Evening streaks skip class nights (Wed, Sat): missing one doesn't break the streak
+function dStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function isFree(d){return SK==='mvmt_v4'&&(d.getDay()===3||d.getDay()===6);}
+function connected(aStr,bStr){ // true if only free days lie strictly between a and b
+  const a=new Date(aStr+'T12:00:00'),b=new Date(bStr+'T12:00:00');
+  const d=new Date(a);d.setDate(d.getDate()+1);
+  while(dStr(d)<bStr){if(!isFree(d))return false;d.setDate(d.getDate()+1);}
+  return dStr(a)<bStr;
+}
 function calcStreaks(history){
   if(!history.length)return{current:0,longest:0};
   const sorted=[...new Set(history.map(e=>e.date))].sort();
   let longest=1,run=1;
   for(let i=1;i<sorted.length;i++){
-    const diff=(new Date(sorted[i])-new Date(sorted[i-1]))/86400000;
-    if(diff===1){run++;if(run>longest)longest=run;}else run=1;
+    if(connected(sorted[i-1],sorted[i])){run++;if(run>longest)longest=run;}else run=1;
   }
   const today=todayStr();
-  const yest=new Date();yest.setDate(yest.getDate()-1);
-  const yStr=yest.getFullYear()+'-'+String(yest.getMonth()+1).padStart(2,'0')+'-'+String(yest.getDate()).padStart(2,'0');
   const last=sorted[sorted.length-1];
+  // the streak is alive if the last session is today, or only free days lie between it and today
   let current=0;
-  if(last===today||last===yStr){
+  if(last===today||connected(last,today)){
     current=1;
     for(let i=sorted.length-2;i>=0;i--){
-      if((new Date(sorted[i+1])-new Date(sorted[i]))/86400000===1)current++;else break;
+      if(connected(sorted[i],sorted[i+1]))current++;else break;
     }
   }
   return{current,longest};
@@ -473,6 +569,7 @@ function showList(){
 }
 
 function renderStats(){
+  document.getElementById('stats-title').textContent=(RK==='morning'?'Morning':'Evening')+' streaks';
   const history=loadHistory(),histSet=new Set(history.map(e=>e.date));
   const{current,longest}=calcStreaks(history);
   const total=history.length,weeks=total>0?Math.round(total/4.3):0;
@@ -510,6 +607,7 @@ function renderStats(){
 }
 
 buildQueue();
+renderTabs();
 renderList();
 </script>
 </body>
