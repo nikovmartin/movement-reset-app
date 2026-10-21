@@ -378,8 +378,8 @@ function pickedVoice(){
   const vs=enVoices();
   const saved=vs.find(v=>v.voiceURI===vPick.uri);
   if(saved) return saved;
-  // Defaults: Ava (best quality first), then Evan
-  for(const n of ['Ava','Evan']){
+  // Defaults: Ava (best quality first), then Evan, then Samantha
+  for(const n of ['Ava','Evan','Samantha']){
     const v=vs.filter(x=>x.name.split(' ')[0]===n).sort((a,b)=>vQual(a)-vQual(b))[0];
     if(v) return v;
   }
