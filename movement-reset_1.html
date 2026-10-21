@@ -60,6 +60,14 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .tr-sess-h{font-size:14px;font-weight:600;margin-bottom:6px}
 .tr-sess-l{font-size:12px;color:var(--text2);line-height:1.6}
 
+.tr-links{display:flex;gap:18px;justify-content:center}
+.tr-item.done .ex-name{color:var(--text3)}
+.tr-item .tr-st{font-size:12px;color:var(--accent);margin-left:auto;flex-shrink:0;align-self:center}
+.tr-item.cur{background:var(--accent-dim)}
+.tr-arm{color:var(--rest)!important}
+.trd-sum{font-size:13px;color:var(--text2);line-height:1.6;max-width:320px;text-align:left;margin-bottom:28px;max-height:38vh;overflow-y:auto}
+.trd-sum b{color:var(--text)}
+
 /* TEST BANNER */
 .test-banner{display:none;margin:10px 20px 0;padding:12px 14px;border-radius:var(--rs);background:rgba(240,216,168,.1);border:.5px solid rgba(240,216,168,.35);color:var(--rest);font-size:13px;line-height:1.45}
 .test-banner.on{display:flex;gap:10px;align-items:flex-start}
@@ -189,6 +197,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   <div class="list-wrap" id="tr-list"></div>
   <div class="bottom-bar">
     <button class="btn-sec" id="tr-discard" onclick="trDiscard()" style="display:none">Discard</button>
+    <button class="btn-sec" id="tr-endlist" onclick="trEndTap(this)" style="display:none">End</button>
     <button class="btn-pri" id="tr-go" onclick="trStart()">Start workout</button>
   </div>
 </div>
@@ -224,10 +233,22 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   </div>
   <div class="ov-next-label" id="tr-next"></div>
   <div class="ov-controls">
-    <button class="ov-btn ov-btn-sec" onclick="trPause()">Pause</button>
+    <button class="ov-btn ov-btn-sec" onclick="trBack()">Back</button>
     <button class="ov-btn ov-btn-pri" id="tr-main" onclick="trMain()">Done</button>
   </div>
-  <div class="ov-skip" id="tr-skip" onclick="trSkip()">Skip</div>
+  <div class="tr-links"><span class="ov-skip" id="tr-skip" onclick="trSkip()">Skip</span><span class="ov-skip" id="tr-end" onclick="trEndTap(this)">End workout</span></div>
+</div>
+
+<!-- TRAINING DONE -->
+<div class="complete-overlay" id="tr-done">
+  <div class="complete-icon">✦</div>
+  <div class="complete-title">Workout complete</div>
+  <div class="complete-time-card">
+    <div class="complete-time-val" id="trd-time">0:00</div>
+    <div class="complete-time-label">Active time</div>
+  </div>
+  <div class="trd-sum" id="trd-sum"></div>
+  <button class="complete-btn" onclick="trDoneClose()">Done</button>
 </div>
 
 <!-- STATS SCREEN -->
@@ -909,7 +930,6 @@ function renderStats(){
 /* =================== TRAINING (Sunday lower body) =================== */
 const TR_KEY='mvmt_train_v1', TR_CUR='mvmt_train_cur_v1';
 const TI={
-  bike:{name:'Easy bike or rower (optional)',type:'time',secs:180,cue:'Only on cold days. Easy pace. Skip if already warm'},
   w_rdl:{name:'Single-leg RDL, light',type:'reps',target:'10 per leg',sides:1,cue:'Light kettlebell or none. Hips back, both hip bones facing down'},
   w_bss:{name:'Split squat, bodyweight',type:'reps',target:'10 per leg',sides:1,cue:'Front shin roughly vertical, lean forward slightly'},
   w_ht:{name:'Hip thrust, empty bar',type:'reps',target:'10',cue:'Squeeze the glutes 2 s at the top. This replaces the glute bridge'},
@@ -931,7 +951,7 @@ function trDeload(){const t=todayStr();return DELOAD_DAYS.some(([a,b])=>t>=a&&t<
 function trPlan(){
   const d=trDeload();
   return [
-    {name:'Warm-up round',sets:1,rest:20,items:['bike','w_rdl','w_bss','w_ht','w_gob','stepdown']},
+    {name:'Warm-up round',sets:1,rest:20,items:['w_rdl','w_bss','w_ht','w_gob','stepdown']},
     {name:'Round 1',sets:d?2:3,rest:40,items:['rdl','gob','ankle']},
     {name:'Round 2',sets:d?2:3,rest:40,items:['bss','ht','sfbal']},
     {name:'Round 3',sets:2,rest:30,items:['calf','walks','copen','bands']},
@@ -947,7 +967,7 @@ function trLast(id,side){
 function trHeavier(id,side){const l=trLast(id,side);return !!(l&&l.length>=2&&l.every(x=>x.reps>=10));}
 function lastStr(id,side){const l=trLast(id,side);return l?l.map(x=>(x.kg?x.kg+' kg × ':'')+x.reps).join(', '):'';}
 
-let TQ=[],tPos=0,tCur=null,tTimer=null,tRem=0,tTot=0,tPhase='work',tPaused=false;
+let TQ=[],tPos=0,tCur=null,tTimer=null,tRem=0,tTot=0,tPhase='work',tUp=-1;
 function trBuild(){
   TQ=[];
   trPlan().forEach((b,bi)=>{
@@ -956,22 +976,36 @@ function trBuild(){
         const it=TI[id];const sides=it.sides?['Right side','Left side']:[''];
         sides.forEach((sd,si)=>{
           const lastOfRound=ii===b.items.length-1&&si===sides.length-1;
-          const rest=si<sides.length-1?10:(lastOfRound?(st<b.sets?60:(bi<3?60:0)):b.rest);
+          const rest=si<sides.length-1?10:(lastOfRound?60:b.rest);
           TQ.push({b:bi,block:b.name,set:st,sets:b.sets,id,side:sd,rest});
         });
       });
     }
   });
 }
-function saveCur(){try{localStorage.setItem(TR_CUR,JSON.stringify({date:todayStr(),pos:tPos,cur:tCur}));}catch(e){}}
+/* status per queue position: 'done' | 'skip' | undefined (untouched) */
+function st(i){return tCur&&tCur.stat?tCur.stat[i]:undefined;}
+function setSt(i,v){tCur.stat=tCur.stat||{};tCur.stat[i]=v;}
+function nextIdx(from){
+  for(let i=from+1;i<TQ.length;i++) if(!st(i)) return i;
+  for(let i=0;i<TQ.length;i++) if(!st(i)) return i;
+  return -1;
+}
+/* active time: counts only while the workout screen is open */
+function segStart(){tCur.seg=Date.now();}
+function segStop(){if(tCur&&tCur.seg){tCur.activeMs=(tCur.activeMs||0)+(Date.now()-tCur.seg);tCur.seg=null;}}
+function saveCur(){try{const c=Object.assign({},tCur);if(c.seg){c.activeMs=(c.activeMs||0)+(Date.now()-c.seg);c.seg=null;}localStorage.setItem(TR_CUR,JSON.stringify({pos:tPos,cur:c}));}catch(e){}}
 function loadCur(){try{const c=JSON.parse(localStorage.getItem(TR_CUR));return c&&c.cur?c:null;}catch(e){return null;}}
 function clearCur(){try{localStorage.removeItem(TR_CUR);}catch(e){}}
 
 function renderTrain(){
-  const plan=trPlan(),cur=loadCur();
-  document.getElementById('tr-sub').innerHTML=(trDeload()?'<b style="color:var(--rest)">Deload week:</b> 2 sets in rounds 1–2, keep the weights easy. ':'')+'Lower body, about 60–65 min. Stop 1–2 reps before failure; go heavier when every set hits 10.';
+  const plan=trPlan(),saved=loadCur();
+  if(saved&&!tCur){tCur=saved.cur;tPos=saved.pos;}
+  if(!TQ.length)trBuild();
+  document.getElementById('tr-sub').innerHTML=(trDeload()?'<b style="color:var(--rest)">Deload week:</b> 2 sets in rounds 1–2, keep the weights easy. ':'')+'Lower body, about 60 min. Stop 1–2 reps before failure; go heavier when every set hits 10. Tap any exercise to jump to it.';
   const box=document.getElementById('tr-list');box.innerHTML='';
-  plan.forEach(b=>{
+  const active=!!saved;
+  plan.forEach((b,bi)=>{
     const h=document.createElement('div');h.className='tr-block';h.innerHTML=b.name+'<span>'+b.sets+(b.sets>1?' sets':' set')+'</span>';box.appendChild(h);
     b.items.forEach(id=>{
       const it=TI[id];const d=document.createElement('div');d.className='tr-item';
@@ -981,22 +1015,63 @@ function renderTrain(){
         const ls=sides.map(sd=>{const l=lastStr(id,sd);return l?(sd?sd.split(' ')[0]+': ':'Last: ')+l+(trHeavier(id,sd)?' <span class="tr-heavier">→ go heavier</span>':''):'';}).filter(Boolean);
         if(ls.length) meta+='<br>'+ls.join('<br>');
       }
-      d.innerHTML='<div class="ex-body"><div class="ex-name">'+it.name+'</div><div class="tr-meta">'+meta+'</div></div>';
+      let stTxt='';
+      if(active){
+        const idx=TQ.map((q,i)=>i).filter(i=>TQ[i].id===id&&TQ[i].b===bi);
+        const dn=idx.filter(i=>st(i)==='done').length,sk=idx.filter(i=>st(i)==='skip').length;
+        if(dn||sk) stTxt=dn+'/'+idx.length+(sk?' · '+sk+' skipped':'');
+        if(dn+sk===idx.length) d.classList.add('done');
+        if(TQ[tPos]&&TQ[tPos].id===id&&TQ[tPos].b===bi) d.classList.add('cur');
+      }
+      d.innerHTML='<div class="ex-body"><div class="ex-name">'+it.name+'</div><div class="tr-meta">'+meta+'</div></div>'+(stTxt?'<div class="tr-st">'+stTxt+'</div>':'');
+      d.onclick=()=>trJump(id,bi);
       box.appendChild(d);
     });
   });
-  document.getElementById('tr-go').textContent=cur?'Resume workout':'Start workout';
-  document.getElementById('tr-discard').style.display=cur?'':'none';
+  document.getElementById('tr-go').textContent=active?'Resume':'Start workout';
+  document.getElementById('tr-discard').style.display=active?'':'none';
+  document.getElementById('tr-endlist').style.display=active?'':'none';
 }
-function trStart(){
+function trBegin(){
   unlockAudio();keepAwake();trBuild();
   const c=loadCur();
-  if(c){tPos=Math.min(c.pos,TQ.length-1);tCur=c.cur;}else{tPos=0;tCur={date:todayStr(),start:Date.now(),sets:[]};}
+  if(c){tCur=c.cur;tPos=Math.min(c.pos,TQ.length-1);}
+  else{tCur={date:todayStr(),activeMs:0,sets:[],stat:{}};tPos=0;}
+  segStart();
+}
+function trStart(){
+  trBegin();
+  if(st(tPos)){const n=nextIdx(tPos);if(n<0){trFinish();return;}tPos=n;}
   saveCur();
   document.getElementById('tr-ov').classList.add('visible');
   trShowWork(true);
 }
-function trDiscard(){clearCur();renderTrain();}
+function trJump(id,bi){
+  trBegin();
+  let target=TQ.findIndex((q,i)=>q.id===id&&q.b===bi&&!st(i));
+  if(target<0) target=TQ.findIndex(q=>q.id===id&&q.b===bi);
+  // leaving the warm-up for a later round: the rest of the warm-up counts as skipped
+  if(TQ[target].b>0) TQ.forEach((q,i)=>{if(q.b===0&&!st(i))setSt(i,'skip');});
+  tPos=target;saveCur();
+  document.getElementById('tr-ov').classList.add('visible');
+  trShowWork(true);
+}
+let discardArm=null;
+function trDiscard(){
+  const btn=document.getElementById('tr-discard');
+  if(!discardArm){btn.textContent='Tap again';btn.classList.add('tr-arm');discardArm=setTimeout(()=>{discardArm=null;btn.textContent='Discard';btn.classList.remove('tr-arm');},3000);return;}
+  clearTimeout(discardArm);discardArm=null;btn.textContent='Discard';btn.classList.remove('tr-arm');
+  clearCur();tCur=null;TQ=[];renderTrain();
+}
+let endArm=null;
+function trEndTap(el){
+  if(!endArm){const old=el.textContent;el.textContent='Tap again to end';el.classList.add('tr-arm');
+    endArm=setTimeout(()=>{endArm=null;el.textContent=old;el.classList.remove('tr-arm');},3000);return;}
+  clearTimeout(endArm);endArm=null;el.textContent=el.id==='tr-endlist'?'End':'End workout';el.classList.remove('tr-arm');
+  if(!tCur){const c=loadCur();if(!c)return;trBuild();tCur=c.cur;tPos=c.pos;}
+  TQ.forEach((q,i)=>{if(!st(i))setSt(i,'skip');});
+  trFinish();
+}
 function trClear(){if(tTimer){clearInterval(tTimer);tTimer=null;}}
 function trSay(q){
   const it=TI[q.id];let t=it.name.replace(/\(.*?\)/g,'').trim();
@@ -1014,7 +1089,8 @@ function trShowWork(announce){
   document.getElementById('tr-last').innerHTML=it.log&&lastStr(q.id,q.side)?'Last time: '+lastStr(q.id,q.side)+(trHeavier(q.id,q.side)?' <span class="tr-heavier">→ go heavier</span>':''):'';
   document.getElementById('tr-cue').textContent=it.cue;
   document.getElementById('tr-log').classList.remove('on');
-  const nx=TQ[tPos+1];document.getElementById('tr-next').textContent=nx?'Next: '+TI[nx.id].name+(nx.side?' — '+nx.side:''):'Last one';
+  const n=nextIdx(tPos);const nx=n>=0&&n!==tPos?TQ[n]:null;
+  document.getElementById('tr-next').textContent=nx?'Next: '+TI[nx.id].name+(nx.side?' — '+nx.side:''):'Last one';
   document.getElementById('tr-skip').textContent='Skip';
   const ring=document.getElementById('tr-ring');ring.classList.remove('rest-ring');ring.style.strokeDashoffset=0;
   document.getElementById('tr-main').classList.remove('rest-btn');
@@ -1029,7 +1105,7 @@ function trShowWork(announce){
   }
 }
 function trTick(onEnd){
-  trClear();tPaused=false;
+  trClear();
   tTimer=setInterval(()=>{
     tRem--;document.getElementById('tr-time').textContent=fmt(tRem);
     document.getElementById('tr-ring').style.strokeDashoffset=CIRC*(1-(tRem/tTot));
@@ -1042,8 +1118,9 @@ function trMain(){
   const q=TQ[tPos],it=TI[q.id];
   if(tPhase==='work'){
     if(it.type==='time'){
-      if(tTimer){trClear();document.getElementById('tr-main').textContent='Resume';return;}
-      document.getElementById('tr-main').textContent='Pause';
+      const m=document.getElementById('tr-main');
+      if(tTimer){trClear();m.textContent='Resume';return;}
+      m.textContent='Pause';
       trTick(()=>{playBeep('done');trAfterWork();});
       return;
     }
@@ -1052,10 +1129,11 @@ function trMain(){
   } else if(tPhase==='log'){
     const kg=parseFloat(String(document.getElementById('tr-kg').value).replace(',','.'))||0;
     const reps=parseInt(document.getElementById('tr-reps').value)||0;
-    tCur.sets.push({id:q.id,side:q.side,set:q.set,kg,reps});saveCur();
+    tCur.sets=tCur.sets.filter(x=>!(x.id===q.id&&x.side===q.side&&x.set===q.set&&x.b===q.b));
+    tCur.sets.push({id:q.id,side:q.side,set:q.set,b:q.b,kg,reps});
     trAfterWork();
   } else if(tPhase==='rest'){
-    trNext();
+    trGoUp();
   }
 }
 function trShowLog(){
@@ -1074,10 +1152,11 @@ function trAdj(f,dir){
 }
 function trAfterWork(){
   const q=TQ[tPos];
-  if(tPos>=TQ.length-1){trFinish();return;}
-  if(!q.rest){trNext();return;}
+  setSt(tPos,'done');saveCur();
+  tUp=nextIdx(tPos);
+  if(tUp<0){trFinish();return;}
   tPhase='rest';tRem=tTot=q.rest;
-  const nx=TQ[tPos+1],it=TI[nx.id];
+  const nx=TQ[tUp],it=TI[nx.id];
   document.getElementById('tr-step').textContent='Rest';
   document.getElementById('tr-name').textContent=it.name;
   const sd=document.getElementById('tr-side');sd.textContent=nx.side||'Get ready';sd.style.color='var(--rest)';
@@ -1087,22 +1166,48 @@ function trAfterWork(){
   document.getElementById('tr-ringwrap').style.display='';
   const ring=document.getElementById('tr-ring');ring.classList.add('rest-ring');ring.style.strokeDashoffset=0;
   document.getElementById('tr-time').textContent=fmt(tRem);
-  document.getElementById('tr-main').textContent='Skip rest';document.getElementById('tr-main').classList.add('rest-btn');
+  const m=document.getElementById('tr-main');m.textContent='Skip rest';m.classList.add('rest-btn');
   document.getElementById('tr-next').textContent='';document.getElementById('tr-skip').textContent='';
-  if(nx.id===q.id&&nx.side&&nx.side!==q.side)say('Switch to the '+nx.side.toLowerCase());else trSay(nx);
-  trTick(()=>{playBeep('go');trNext();});
+  if(nx.id===q.id&&nx.side&&nx.side!==q.side&&nx.set===q.set)say('Switch to the '+nx.side.toLowerCase());else trSay(nx);
+  trTick(()=>{playBeep('go');trGoUp();});
 }
-function trNext(){trClear();tPos++;saveCur();trShowWork(false);}
-function trSkip(){if(tPhase==='rest')return;trClear();if(tPos>=TQ.length-1){trFinish();return;}tPos++;saveCur();trShowWork(true);}
-function trPause(){trClear();saveCur();releaseAwake();document.getElementById('tr-ov').classList.remove('visible');renderTrain();}
+function trGoUp(){trClear();tPos=tUp;saveCur();trShowWork(false);}
+function trSkip(){
+  if(tPhase==='rest')return;
+  trClear();setSt(tPos,'skip');
+  const n=nextIdx(tPos);
+  if(n<0){trFinish();return;}
+  tPos=n;saveCur();trShowWork(true);
+}
+function trBack(){trClear();segStop();saveCur();releaseAwake();document.getElementById('tr-ov').classList.remove('visible');renderTrain();}
 function trFinish(){
-  trClear();
-  const d=trLoad();tCur.mins=Math.round((Date.now()-(tCur.start||Date.now()))/60000);
-  d.sessions.push(tCur);trSave(d);clearCur();releaseAwake();
+  trClear();segStop();
+  const d=trLoad();
+  const sess={date:tCur.date||todayStr(),mins:Math.max(1,Math.round((tCur.activeMs||0)/60000)),sets:tCur.sets};
+  // summary before saving (compare with previous sessions)
+  const beats=[];
+  const seen={};
+  sess.sets.forEach(x=>{const k=x.id+'|'+(x.side||'');if(seen[k])return;seen[k]=1;
+    const prev=trLast(x.id,x.side);if(!prev)return;
+    const now=sess.sets.filter(y=>y.id===x.id&&(y.side||'')===(x.side||''));
+    const best=a=>Math.max(...a.map(z=>z.kg*100+z.reps));
+    if(best(now)>best(prev))beats.push(TI[x.id].name.replace(/,.*$/,'')+(x.side?' ('+x.side.split(' ')[0]+')':''));
+  });
+  const skipped={};TQ.forEach((q,i)=>{if(st(i)==='skip'){const k=TI[q.id].name.replace(/\s*\(.*?\)/g,'');skipped[k]=(skipped[k]||0)+1;}});
+  const doneCount=TQ.filter((q,i)=>st(i)==='done').length;
+  if(sess.sets.length||doneCount){d.sessions.push(sess);trSave(d);}
+  clearCur();tCur=null;TQ=[];releaseAwake();
   document.getElementById('tr-ov').classList.remove('visible');
+  document.getElementById('trd-time').textContent=sess.mins+' min';
+  let h='<b>'+doneCount+'</b> sets done, <b>'+sess.sets.length+'</b> logged with weights.';
+  if(beats.length)h+='<br><br><b>Beat last time:</b> '+beats.join(', ');
+  const sk=Object.keys(skipped);
+  if(sk.length)h+='<br><br><b>Skipped:</b> '+sk.map(k=>k+(skipped[k]>1?' ×'+skipped[k]:'')).join(', ');
+  document.getElementById('trd-sum').innerHTML=h;
+  document.getElementById('tr-done').classList.add('visible');
   say('Workout complete. Great work');
-  renderTrain();showTrHistory();
 }
+function trDoneClose(){document.getElementById('tr-done').classList.remove('visible');showTrain();}
 function trSessionText(s){
   const by={};s.sets.forEach(x=>{const k=x.id+'|'+(x.side||'');(by[k]=by[k]||[]).push(x);});
   return Object.keys(by).map(k=>{const [id,sd]=k.split('|');return TI[id].name.replace(/,.*$/,'')+(sd?' ('+sd.split(' ')[0]+')':'')+': '+by[k].map(x=>(x.kg?x.kg+'kg×':'')+x.reps).join(', ');});
@@ -1113,7 +1218,7 @@ function showTrHistory(){
   const ss=trLoad().sessions.slice().reverse();
   document.getElementById('tr-hist').innerHTML=ss.length?ss.map(s=>{
     const dt=new Date(s.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-    return '<div class="tr-sess"><div class="tr-sess-h">'+dt+(s.mins?' · '+s.mins+' min':'')+'</div><div class="tr-sess-l">'+trSessionText(s).join('<br>')+'</div></div>';
+    return '<div class="tr-sess"><div class="tr-sess-h">'+dt+(s.mins?' · '+s.mins+' min':'')+'</div><div class="tr-sess-l">'+(trSessionText(s).join('<br>')||'No weights logged')+'</div></div>';
   }).join(''):'<div class="empty">No workouts logged yet.</div>';
 }
 function trCopyLog(){
