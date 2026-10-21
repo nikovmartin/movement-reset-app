@@ -33,6 +33,13 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .rt-tab.on{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,240,216,.3)}
 .rt-sub{font-size:12px;color:var(--text2);padding:10px 20px 0;line-height:1.4}
 
+/* TEST BANNER */
+.test-banner{display:none;margin:10px 20px 0;padding:12px 14px;border-radius:var(--rs);background:rgba(240,216,168,.1);border:.5px solid rgba(240,216,168,.35);color:var(--rest);font-size:13px;line-height:1.45}
+.test-banner.on{display:flex;gap:10px;align-items:flex-start}
+.test-banner .tb-text{flex:1}
+.test-banner b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.test-banner button{background:var(--rest);color:var(--rest-text);border:none;border-radius:6px;padding:6px 10px;font-size:13px;font-weight:600;font-family:inherit;flex-shrink:0}
+
 /* LEVELS */
 .lv-badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;margin-left:4px;border-radius:20px;background:var(--accent-dim);color:var(--accent);border:.5px solid rgba(200,240,216,.3);vertical-align:1px;cursor:pointer}
 .lv-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;align-items:flex-end}
@@ -131,9 +138,10 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 <div class="screen active" id="screen-list">
   <div class="nav">
     <span class="nav-title">Movement Reset</span>
-    <span class="nav-tab" onclick="showStats()">Streaks</span>
+    <span><span class="nav-tab" id="voice-btn" onclick="toggleVoice()">Voice on</span><span class="nav-tab" onclick="showStats()">Streaks</span></span>
   </div>
   <div class="rt-tabs" id="rt-tabs"></div>
+  <div class="test-banner" id="test-banner"></div>
   <div class="rt-sub" id="rt-sub"></div>
   <div class="prog-wrap"><div class="prog-fill" id="progress"></div></div>
   <div class="list-wrap" id="list"></div>
@@ -333,6 +341,58 @@ function switchRoutine(k){
 
 /* ---- Sound: generated with Web Audio (the old embedded file was corrupted) ---- */
 let actx=null;
+/* ---- Spoken cues (iPhone built-in voice) ---- */
+const VK='mvmt_voice_v1';
+let voiceOn=(function(){try{return localStorage.getItem(VK)!=='off';}catch(e){return true;}})();
+function renderVoice(){const b=document.getElementById('voice-btn');if(b)b.textContent=voiceOn?'Voice on':'Voice off';}
+function toggleVoice(){voiceOn=!voiceOn;try{localStorage.setItem(VK,voiceOn?'on':'off');}catch(e){}renderVoice();if(!voiceOn)try{speechSynthesis.cancel();}catch(e){}else say('Voice on');}
+function say(t){
+  if(!voiceOn||!('speechSynthesis' in window)) return;
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=1;speechSynthesis.speak(u);}catch(e){}
+}
+let announcedFor=-1;
+function announce(pos){
+  const it=queue[pos];if(!it||it.type!=='exercise')return;
+  announcedFor=pos;
+  const ex=EX[it.exIdx],st=ex.steps[it.stepIdx],lab=(st.label||'').toLowerCase();
+  if(it.stepIdx>0){
+    if(/side|leg/.test(lab)) say('Switch to the '+lab);
+    else say(st.label);
+    return;
+  }
+  let t=ex.name.replace(/\(.*?\)/g,'').replace('90/90','90 90').trim();
+  if(st.label) t+=', '+lab;
+  if(ex.levels) t+=', level '+(lvl(ex)+1);
+  say(t);
+}
+
+/* ---- Test-week reminder ---- */
+const TESTS=[
+  {id:'2026-11',start:'2026-11-23',end:'2026-11-27',day:'Fri 27 Nov'},
+  {id:'2026-12',start:'2026-12-21',end:'2026-12-27',day:'any day 21–27 Dec'},
+  {id:'2027-01',start:'2027-01-25',end:'2027-01-29',day:'Fri 29 Jan'},
+  {id:'2027-02',start:'2027-02-22',end:'2027-02-26',day:'Fri 26 Feb (final skill check)'},
+];
+const TK='mvmt_tests_done_v1';
+function testsDone(){try{return JSON.parse(localStorage.getItem(TK))||[];}catch(e){return[];}}
+function renderBanner(){
+  const el=document.getElementById('test-banner');if(!el)return;
+  const today=todayStr(),done=testsDone();
+  let html='';
+  for(const t of TESTS){
+    if(done.includes(t.id)) continue;
+    const pre=new Date(t.start+'T12:00:00');pre.setDate(pre.getDate()-2);
+    if(today>=t.start&&today<=t.end){
+      html='<div class="tb-text"><b>Test week</b>Knee to wall, wedge height, step-downs, handstand hold, pull-ups — '+t.day+'. Log results in your Goals doc.</div><button onclick="testDone(\''+t.id+'\')">Done</button>';break;
+    }
+    if(today>=dStr(pre)&&today<t.start){
+      html='<div class="tb-text"><b>Heads-up</b>Test week starts Monday. Tests '+t.day+'.</div>';break;
+    }
+  }
+  el.innerHTML=html;el.classList.toggle('on',!!html);
+}
+function testDone(id){const d=testsDone();d.push(id);try{localStorage.setItem(TK,JSON.stringify(d));}catch(e){}renderBanner();}
+
 function unlockAudio(){
   try{
     if(navigator.audioSession) navigator.audioSession.type='playback'; // iOS 17+: play even with the silent switch on
@@ -340,6 +400,7 @@ function unlockAudio(){
   try{
     if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;actx=new C();}
     if(actx.state!=='running') actx.resume();
+    try{if('speechSynthesis' in window&&!window._spk){window._spk=1;const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);}}catch(e){}
     const b=actx.createBuffer(1,1,22050),s=actx.createBufferSource();
     s.buffer=b;s.connect(actx.destination);s.start(0);
   }catch(e){}
@@ -483,6 +544,7 @@ function getNextLabel(){
 }
 
 function showExercise(item){
+  if(routineStarted&&announcedFor!==qPos) announce(qPos);
   const ex=EX[item.exIdx],st=ex.steps[item.stepIdx];
   ovIsRest=false;ovRem=st.secs;ovTotal=st.secs;
   document.getElementById('ov-step').textContent='Exercise '+(item.exIdx+1)+' of '+TOTAL_EX;
@@ -509,6 +571,7 @@ function showRest(){
   for(let i=qPos+1;i<queue.length;i++){
     if(queue[i].type==='exercise'){nextEx=EX[queue[i].exIdx];nextSt=nextEx.steps[queue[i].stepIdx];break;}
   }
+  if(routineStarted) announce(qPos+1);
   document.getElementById('ov-step').textContent='Rest';
   document.getElementById('ov-name').textContent=nextEx?nextEx.name:'';
   document.getElementById('ov-side').textContent=nextSt&&nextSt.label?nextSt.label:'Get ready';
@@ -550,7 +613,7 @@ function toggleTimer(){
     clearInterval(ovInterval);ovInterval=null;ovRunning=false;
     document.getElementById('ov-play').textContent='Resume';
   } else {
-    if(!routineStarted){routineStarted=true;sessionStart=Date.now();unlockAudio();keepAwake();}
+    if(!routineStarted){routineStarted=true;sessionStart=Date.now();unlockAudio();keepAwake();if(queue[qPos]&&queue[qPos].type==='exercise')announce(qPos);}
     if(ovRem<=0){ovRem=ovTotal;document.getElementById('ring').style.strokeDashoffset=0;}
     startTimer();
   }
@@ -593,7 +656,7 @@ function showComplete(){
 
 function finishSession(){
   document.getElementById('complete-overlay').classList.remove('visible');
-  routineStarted=false;sessionStart=null;qPos=0;
+  routineStarted=false;sessionStart=null;qPos=0;announcedFor=-1;
   renderList();
 }
 
@@ -692,6 +755,8 @@ function renderStats(){
 
 buildQueue();
 renderTabs();
+renderVoice();
+renderBanner();
 renderList();
 </script>
 </body>
