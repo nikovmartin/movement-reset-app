@@ -366,11 +366,12 @@ function toggleVoice(){voiceOn=!voiceOn;try{localStorage.setItem(VK,voiceOn?'on'
 const VSK='mvmt_voice_pick_v1';
 let vPick=(function(){try{return JSON.parse(localStorage.getItem(VSK))||{};}catch(e){return{};}})(); // {uri, rate}
 function saveVPick(){try{localStorage.setItem(VSK,JSON.stringify(vPick));}catch(e){}}
+function vQual(v){const t=(v.name+' '+v.voiceURI).toLowerCase();return t.includes('premium')?0:(t.includes('enhanced')?1:2);}
+const NOVELTY=/^(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|kathy|ralph|eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i;
 function enVoices(){
   try{
-    const q=v=>/premium/i.test(v.name)?0:(/enhanced/i.test(v.name)?1:2);
-    return speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)&&!/novelty|eloquence/i.test(v.voiceURI))
-      .sort((a,b)=>q(a)-q(b)||a.name.localeCompare(b.name));
+    return speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)&&!/speech\.synthesis|eloquence|novelty/i.test(v.voiceURI)&&!NOVELTY.test(v.name))
+      .sort((a,b)=>vQual(a)-vQual(b)||a.name.localeCompare(b.name));
   }catch(e){return[];}
 }
 function pickedVoice(){
@@ -379,7 +380,7 @@ function pickedVoice(){
   if(saved) return saved;
   // Defaults: Ava (best quality first), then Evan
   for(const n of ['Ava','Evan']){
-    const v=vs.find(x=>x.name.split(' ')[0]===n);
+    const v=vs.filter(x=>x.name.split(' ')[0]===n).sort((a,b)=>vQual(a)-vQual(b))[0];
     if(v) return v;
   }
   return null;
@@ -411,7 +412,7 @@ function renderVoiceSheet(){
   vs.forEach(v=>{
     const d=document.createElement('div');
     d.className='lv-item'+(cur&&cur.voiceURI===v.voiceURI?' on':'');
-    const qual=/premium/i.test(v.name)?'Premium':(/enhanced/i.test(v.name)?'Enhanced':'');
+    const qual=['Premium','Enhanced',''][vQual(v)];
     d.innerHTML='<div class="lv-cue">'+v.name.replace(/\s*\((premium|enhanced)\)/i,'')+(qual?'<span class="vc-q">'+qual+'</span>':'')+'</div><div class="lv-test">'+v.lang+(cur&&cur.voiceURI===v.voiceURI?' · selected':'')+'</div>';
     d.onclick=()=>{vPick.uri=v.voiceURI;saveVPick();renderVoiceSheet();say(SAMPLE,true);};
     box.appendChild(d);
