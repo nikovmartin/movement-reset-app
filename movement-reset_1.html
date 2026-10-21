@@ -33,6 +33,11 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .rt-tab.on{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,240,216,.3)}
 .rt-sub{font-size:12px;color:var(--text2);padding:10px 20px 0;line-height:1.4}
 
+.vc-row{display:flex;gap:8px;margin-bottom:10px}
+.vc-btn{flex:1;padding:10px;border-radius:var(--rs);border:.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:14px;font-weight:600;font-family:inherit}
+.vc-btn.on{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,240,216,.4)}
+.vc-q{font-size:11px;color:var(--text2);font-weight:400;margin-left:6px}
+
 /* TEST BANNER */
 .test-banner{display:none;margin:10px 20px 0;padding:12px 14px;border-radius:var(--rs);background:rgba(240,216,168,.1);border:.5px solid rgba(240,216,168,.35);color:var(--rest);font-size:13px;line-height:1.45}
 .test-banner.on{display:flex;gap:10px;align-items:flex-start}
@@ -138,7 +143,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 <div class="screen active" id="screen-list">
   <div class="nav">
     <span class="nav-title">Movement Reset</span>
-    <span><span class="nav-tab" id="voice-btn" onclick="toggleVoice()">Voice on</span><span class="nav-tab" onclick="showStats()">Streaks</span></span>
+    <span><span class="nav-tab" id="voice-btn" onclick="openVoice()">Voice on</span><span class="nav-tab" onclick="showStats()">Streaks</span></span>
   </div>
   <div class="rt-tabs" id="rt-tabs"></div>
   <div class="test-banner" id="test-banner"></div>
@@ -181,6 +186,18 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
     <button class="ov-btn ov-btn-pri" id="ov-play" onclick="toggleTimer()">Start</button>
   </div>
   <div class="ov-skip" id="ov-skip-btn" onclick="skipCurrent()">Mark done &amp; skip</div>
+</div>
+
+<!-- VOICE SHEET -->
+<div class="lv-sheet" id="vc-sheet" onclick="if(event.target===this)closeVoice()">
+  <div class="lv-panel">
+    <div class="lv-title">Voice</div>
+    <div class="lv-sub">Tap a voice to hear it and select it. Calmer voices: download "Enhanced" or "Premium" ones in iPhone Settings → Accessibility → Spoken Content → Voices → English.</div>
+    <div class="vc-row"><button class="vc-btn" id="vc-onoff" onclick="toggleVoice()"></button></div>
+    <div class="vc-row" id="vc-speed"></div>
+    <div id="vc-list"></div>
+    <button class="lv-close" onclick="closeVoice()">Close</button>
+  </div>
 </div>
 
 <!-- LEVEL SHEET -->
@@ -345,11 +362,54 @@ let actx=null;
 const VK='mvmt_voice_v1';
 let voiceOn=(function(){try{return localStorage.getItem(VK)!=='off';}catch(e){return true;}})();
 function renderVoice(){const b=document.getElementById('voice-btn');if(b)b.textContent=voiceOn?'Voice on':'Voice off';}
-function toggleVoice(){voiceOn=!voiceOn;try{localStorage.setItem(VK,voiceOn?'on':'off');}catch(e){}renderVoice();if(!voiceOn)try{speechSynthesis.cancel();}catch(e){}else say('Voice on');}
-function say(t){
-  if(!voiceOn||!('speechSynthesis' in window)) return;
-  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=1;speechSynthesis.speak(u);}catch(e){}
+function toggleVoice(){voiceOn=!voiceOn;try{localStorage.setItem(VK,voiceOn?'on':'off');}catch(e){}renderVoice();if(!voiceOn)try{speechSynthesis.cancel();}catch(e){}else say('Voice on');if(document.getElementById('vc-sheet').classList.contains('visible'))renderVoiceSheet();}
+const VSK='mvmt_voice_pick_v1';
+let vPick=(function(){try{return JSON.parse(localStorage.getItem(VSK))||{};}catch(e){return{};}})(); // {uri, rate}
+function saveVPick(){try{localStorage.setItem(VSK,JSON.stringify(vPick));}catch(e){}}
+function enVoices(){
+  try{
+    const q=v=>/premium/i.test(v.name)?0:(/enhanced/i.test(v.name)?1:2);
+    return speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)&&!/novelty|eloquence/i.test(v.voiceURI))
+      .sort((a,b)=>q(a)-q(b)||a.name.localeCompare(b.name));
+  }catch(e){return[];}
 }
+function pickedVoice(){const vs=enVoices();return vs.find(v=>v.voiceURI===vPick.uri)||null;}
+function say(t,force){
+  if((!voiceOn&&!force)||!('speechSynthesis' in window)) return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    const v=pickedVoice();
+    if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-GB';
+    u.rate=vPick.rate||0.9;u.pitch=1;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+const SAMPLE='Couch stretch, left side, level 1';
+function renderVoiceSheet(){
+  document.getElementById('vc-onoff').textContent=voiceOn?'Voice is on (tap to turn off)':'Voice is off (tap to turn on)';
+  document.getElementById('vc-onoff').classList.toggle('on',voiceOn);
+  const sp=document.getElementById('vc-speed');sp.innerHTML='';
+  [['Slow',0.8],['Calm',0.9],['Normal',1.0]].forEach(([n,r])=>{
+    const b=document.createElement('button');b.className='vc-btn'+((vPick.rate||0.9)===r?' on':'');b.textContent=n;
+    b.onclick=()=>{vPick.rate=r;saveVPick();renderVoiceSheet();say(SAMPLE,true);};sp.appendChild(b);
+  });
+  const box=document.getElementById('vc-list');box.innerHTML='';
+  const vs=enVoices();
+  if(!vs.length){box.innerHTML='<div class="lv-sub">No voices loaded yet. Close and reopen this panel.</div>';return;}
+  const cur=pickedVoice();
+  vs.forEach(v=>{
+    const d=document.createElement('div');
+    d.className='lv-item'+(cur&&cur.voiceURI===v.voiceURI?' on':'');
+    const qual=/premium/i.test(v.name)?'Premium':(/enhanced/i.test(v.name)?'Enhanced':'');
+    d.innerHTML='<div class="lv-cue">'+v.name.replace(/\s*\((premium|enhanced)\)/i,'')+(qual?'<span class="vc-q">'+qual+'</span>':'')+'</div><div class="lv-test">'+v.lang+(cur&&cur.voiceURI===v.voiceURI?' · selected':'')+'</div>';
+    d.onclick=()=>{vPick.uri=v.voiceURI;saveVPick();renderVoiceSheet();say(SAMPLE,true);};
+    box.appendChild(d);
+  });
+}
+function openVoice(){unlockAudio();renderVoiceSheet();document.getElementById('vc-sheet').classList.add('visible');}
+function closeVoice(){document.getElementById('vc-sheet').classList.remove('visible');}
+try{speechSynthesis.addEventListener('voiceschanged',()=>{if(document.getElementById('vc-sheet').classList.contains('visible'))renderVoiceSheet();});}catch(e){}
 let announcedFor=-1;
 function announce(pos){
   const it=queue[pos];if(!it||it.type!=='exercise')return;
