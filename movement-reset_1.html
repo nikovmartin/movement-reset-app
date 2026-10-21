@@ -33,6 +33,20 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .rt-tab.on{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,240,216,.3)}
 .rt-sub{font-size:12px;color:var(--text2);padding:10px 20px 0;line-height:1.4}
 
+/* LEVELS */
+.lv-badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;margin-left:4px;border-radius:20px;background:var(--accent-dim);color:var(--accent);border:.5px solid rgba(200,240,216,.3);vertical-align:1px;cursor:pointer}
+.lv-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:300;align-items:flex-end}
+.lv-sheet.visible{display:flex}
+.lv-panel{background:var(--surface);width:100%;max-height:85vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom))}
+.lv-title{font-size:17px;font-weight:600;margin-bottom:4px}
+.lv-sub{font-size:12px;color:var(--text2);margin-bottom:14px}
+.lv-item{background:var(--surface2);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;border:.5px solid transparent;cursor:pointer}
+.lv-item.on{border-color:var(--accent);background:var(--accent-dim)}
+.lv-head{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.lv-cue{font-size:14px;line-height:1.4;color:var(--text)}
+.lv-test{font-size:12px;color:var(--text2);margin-top:6px}
+.lv-close{width:100%;margin-top:6px;padding:12px;background:var(--surface2);border:none;border-radius:var(--rs);color:var(--text2);font-size:15px;font-weight:600;font-family:inherit}
+
 /* PROGRESS */
 .prog-wrap{height:2px;background:var(--border);flex-shrink:0}
 .prog-fill{height:100%;background:var(--accent);transition:width .4s ease;width:0%}
@@ -161,6 +175,16 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   <div class="ov-skip" id="ov-skip-btn" onclick="skipCurrent()">Mark done &amp; skip</div>
 </div>
 
+<!-- LEVEL SHEET -->
+<div class="lv-sheet" id="lv-sheet" onclick="if(event.target===this)closeLevels()">
+  <div class="lv-panel">
+    <div class="lv-title" id="lv-title"></div>
+    <div class="lv-sub">Tap a level to switch. Move up when you pass the test.</div>
+    <div id="lv-list"></div>
+    <button class="lv-close" onclick="closeLevels()">Close</button>
+  </div>
+</div>
+
 <!-- COMPLETE OVERLAY -->
 <div class="complete-overlay" id="complete-overlay">
   <div class="complete-icon">✦</div>
@@ -177,47 +201,103 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 <script>
 const CIRC=521;
 
+const LS=(l,r)=>[{label:'Left side',secs:l},{label:'Right side',secs:r===undefined?l:r}];
+const RS=(r,l)=>[{label:'Right side',secs:r},{label:'Left side',secs:l}];
+const ONE=s=>[{label:'',secs:s}];
+
+const X={
+  // ---------- morning ----------
+  neck:{name:'Neck releases', cue:'Three directions — forward, left, right. Slow and gentle', steps:ONE(20)},
+  wrist:{name:'Wrist prep', cue:'Slow circles, then a gentle extension and flexion stretch — no forcing', steps:ONE(30)},
+  catcow:{name:'Cat-Cow into Thread-the-Needle', cue:'Round and arch through cat-cow, then rotate open into thread-the-needle', steps:[{label:'Cat-Cow',secs:20},{label:'Left side',secs:20},{label:'Right side',secs:20}]},
+  dogflow:{name:'Down dog to up dog flow', cue:'Flow slowly between the two. In each down dog, pedal the heels a few times for the calves', steps:ONE(60)},
+  crab:{name:'Crab hold', cue:'Sit, hands behind you, fingers pointing back (or sideways if the wrists complain). Lift the hips to a tabletop, press the chest up, shoulders back and down', steps:[{label:'Round 1',secs:20},{label:'Round 2',secs:20}]},
+  wgs:{name:"World's Greatest Stretch", cue:'Lunge, elbow to instep, rotate open and reach tall — slow and flowing, not a long hold', steps:LS(30)},
+  hipcirc:{name:'Standing hip circles', cue:'Knee lifts up, opens out and around — slow, both directions, tall posture', steps:ONE(30)},
+  legswing:{name:'Leg swings', cue:'Hand on a wall: 10 front-to-back, then 10 side-to-side — relaxed, growing range', steps:[{label:'Left leg',secs:30},{label:'Right leg',secs:30}]},
+  armcirc:{name:'Arm circles + spinal rotations', cue:'Big arm circles both directions, then relaxed standing twists letting the arms swing', steps:ONE(30)},
+  shake:{name:'Shake-out', cue:'Loose shaking from hands to shoulders, then legs one at a time', steps:ONE(20)},
+  pogo:{name:'Pogo bounces', cue:'Small, quiet, springy hops on the balls of the feet — knees soft, arches up', steps:ONE(30)},
+  // ---------- evening ----------
+  tspine:{name:'Thoracic extension on foam roller', cue:'Roller across the upper back, hands behind the head. Extend over it segment by segment, pause at tight spots', steps:ONE(45)},
+  n9090:{id:'9090',name:'90/90 hip switches', steps:ONE(60), levels:[
+    {cue:'Hands on the floor behind you for support. Rotate both knees side to side, both directions, slow and controlled', test:'60 s smooth with light hand support'},
+    {cue:'Hands-free, sitting tall. Rotate both knees side to side without leaning back', test:'60 s hands-free, spine tall, no falling back'},
+    {cue:'Hands-free. After each switch, lift the back knee off the floor for 3 s (rotation inward) before the next switch', test:'slow the lift-offs and hold each 5 s'}]},
+  addrock:{id:'addrock',name:'Adductor rock-backs', steps:LS(40), levels:[
+    {cue:'On all fours, one leg straight out to the side, foot flat. Rock the hips back toward the heel, then forward. Spine long', test:'Full range with no pinch, both sides'},
+    {cue:'Same, with a 5 s hold at the deepest point of each rock, breathing out', test:'sink a little deeper over time'}]},
+  couch:{id:'couch',name:'Couch stretch (active)', steps:LS(45), levels:[
+    {cue:'Back shin up the wall, front foot forward, hands on the front knee or blocks. Torso leaning forward, glute squeezed', test:'45 s comfortable leaning forward'},
+    {cue:'Same, torso upright, ribs down, back glute squeezed', test:'45 s upright feels easy'},
+    {cue:'Upright. Every 10 s: 5 s pressing the back shin into the wall and squeezing the glute, then relax deeper', test:'sink deeper over time'}]},
+  toetuck:{name:'Kneeling toe stretch', cue:'Kneel with toes tucked under, sit back toward the heels so the toes bend back. Big toes stay in. Ease off if it is sharp; lean forward onto the hands to reduce it', steps:ONE(30)},
+  fig4:{id:'fig4',name:'Figure-4 at hip height', steps:RS(60,45), levels:[
+    {cue:'Shin on a table at hip height, knee out to the side, standing leg straight. Hinge forward from the hips with a long spine', test:'Chest comes forward without rounding the back'},
+    {cue:'Same, and every 15 s press the shin down into the table for 5 s, then relax and hinge deeper', test:'hinge deeper over time'}]},
+  toeyoga:{id:'toeyoga',name:'Toe yoga', steps:ONE(45), levels:[
+    {cue:'Seated, barefoot. Lift only the big toe while the others stay down, then press the big toe down and lift the other four. Alternate slowly', test:'10 clean switches each foot without using your hands'},
+    {cue:'Standing, barefoot, same switches', test:'10 clean switches each foot standing'},
+    {cue:'Standing on one leg, same switches. Switch legs halfway', test:'switch more slowly with longer holds'}]},
+  shortfoot:{id:'shortfoot',name:'Short foot', steps:RS(45,30), levels:[
+    {cue:'Seated, barefoot. Draw the ball of the foot toward the heel to dome the arch, toes long and relaxed. Hold 5 s, release, repeat', test:'10 × 5 s holds without the toes curling'},
+    {cue:'Standing on both feet, same doming, 5 s holds', test:'10 × 5 s holds standing, toes relaxed'},
+    {cue:'Standing on one leg, keep the arch domed for 5 s holds. Light finger touch on a wall is fine', test:'10 × 5 s on one leg without losing the arch'},
+    {cue:'On one leg in a quarter squat: arch domed, knee over the 2nd–3rd toe. 5 s holds', test:'hold each rep 10 s'}]},
+  kot:{id:'kot',name:'Knee-over-toe rocks', steps:RS(60,45), levels:[
+    {cue:'Standing at a wall, front foot flat. Hold the short-foot arch and rock the knee forward over the 2nd–3rd toe. Stop where the arch starts to drop', test:'Knee reaches further than last month at the same arch'},
+    {cue:'Same, with a 5 s hold at the end of each rock', test:'Holds feel easy at your end range'},
+    {cue:'Toes raised on a 1–2 cm plate, heel down, same rocks with 5 s holds', test:'slightly higher plate over time'}]},
+  squat:{id:'squat',name:'Deep squat hold', steps:ONE(60), levels:[
+    {cue:'Heels on the wedge, holding a support. Sit deep, arches up, knees over the toes', test:'60 s with arches up and knees tracking'},
+    {cue:'Heels on the wedge, no support', test:'60 s, arches up, no support'},
+    {cue:'Lower wedge (or thinner plate), no support', test:'60 s at the lower height'},
+    {cue:'Heels flat, holding a support', test:'60 s flat with support'},
+    {cue:'Heels flat, no support', test:'goal reached, keep it'}]},
+  child:{name:"Child's pose", cue:'Knees wide, arms long, forehead down. Let the hips sink and breathe into the back', steps:ONE(60)},
+  breath:{name:'Breathing', cue:'Lying on your back, knees bent. Breathe in through the nose for 4 s, out slowly for 6–8 s', steps:ONE(60)},
+  // ---------- Friday extras ----------
+  hang:{name:'Dead hang', cue:'Fully passive — let everything decompress', steps:ONE(30)},
+  door:{name:'Doorway chest stretch', cue:'Forearm on the frame, step through and rotate away — opens the chest', steps:LS(30)},
+  angels:{name:'Wall angels', cue:'Back flat to the wall, slide arms up and down — shoulder extension and external rotation', steps:ONE(60)},
+  jeff:{name:'Jefferson curl', cue:'6 slow reps, vertebra by vertebra, bodyweight or very light', steps:ONE(75)},
+  coss:{name:'Cossack squat (alternating)', cue:'Shift side to side, sitting deep into one leg, heel down, other leg straight. Hold a support if needed', steps:ONE(90)},
+};
+
 const ROUTINES={
   morning:{tab:'Morning',key:'mvmt_morning_v1',rest:5,done:'Body is awake. Have a good day.',
-    sub:'Primer, about 7 min. Gentle first, then build up: rotate, flow, swing, bounce.',
-    ex:[
-      {name:'Neck releases', cue:'Three directions — forward, left, right. Slow and gentle', steps:[{label:'',secs:30}]},
-      {name:'Wrist prep', cue:'Slow circles, then a gentle extension and flexion stretch — no forcing', steps:[{label:'',secs:30}]},
-      {name:'Cat-Cow into Thread-the-Needle', cue:'Round and arch through cat-cow, then rotate open into thread-the-needle', steps:[{label:'Cat-Cow',secs:30},{label:'Left side',secs:30},{label:'Right side',secs:30}]},
-      {name:'Down dog to up dog flow', cue:'Flow slowly between the two — exhale back to down dog, inhale forward to up dog', steps:[{label:'',secs:60}]},
-      {name:'Standing hip circles', cue:'Knee lifts up, opens out and around — slow, both directions, tall posture', steps:[{label:'',secs:30}]},
-      {name:'Leg swings', cue:'Hand on a wall: 10 front-to-back, then 10 side-to-side — relaxed, growing range', steps:[{label:'Left leg',secs:30},{label:'Right leg',secs:30}]},
-      {name:'Arm circles + spinal rotations', cue:'Big arm circles both directions, then relaxed standing twists letting the arms swing', steps:[{label:'',secs:30}]},
-      {name:'Shake-out', cue:'Loose shaking from hands to shoulders, then legs one at a time — let everything jiggle', steps:[{label:'',secs:30}]},
-      {name:'Pogo bounces', cue:'Small, quiet, springy hops on the balls of the feet — knees soft, arches up, ankles doing the work', steps:[{label:'',secs:30}]},
-    ]},
-  evening:{tab:'Evening',key:'mvmt_v4',rest:10,done:'Great work. Time to rest.',
-    sub:'Reset, about 14 min. Undo the sitting, wake up the feet, loosen ankles and hips. Right side gets extra time.',
-    ex:[
-      {name:'Thoracic extension on foam roller', cue:'Segment by segment — pause at tight spots', steps:[{label:'',secs:45}]},
-      {name:'90/90 hip switches', cue:'Continuously rotate the hips in and out, both directions — control, not momentum', steps:[{label:'',secs:60}]},
-      {name:'Figure 4 stretch', cue:'Ankle across the opposite knee, hinge forward keeping the spine long — targets the glute and outer hip', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-      {name:'Couch stretch', cue:'Back shin flat against the wall, glute squeezed, ribs down, torso tall — feel it in the front hip, not the lower back', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-      {name:"World's Greatest Stretch", cue:'Lunge, rotate open through the t-spine, reach tall — hip flexor, hamstring, spine, shoulder in one flow', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]},
-      {name:'Downward Dog with calf pedals', cue:'Weight through the hands, pedal the heels one at a time — hamstring, calf, shoulder, and wrist all in one shape', steps:[{label:'',secs:60}]},
-      {name:'Toe yoga', cue:'Seated or standing, barefoot: lift only the big toe, then press the big toe down and lift the other four. Alternate slowly', steps:[{label:'',secs:45}]},
-      {name:'Short foot', cue:'Barefoot, standing: draw the ball of the foot toward the heel to dome the arch, toes stay long and relaxed. Hold 5 s, release, repeat', steps:[{label:'Right foot',secs:45},{label:'Left foot',secs:30},{label:'Right foot, on one leg',secs:30}]},
-      {name:'Knee-over-toe rocks', cue:'Hold the short-foot arch. Knee travels over the 2nd–3rd toe (aim toward the little-toe side). Go only as far as the arch holds — that is your real range', steps:[{label:'Right side',secs:60},{label:'Left side',secs:45}]},
-      {name:'Deep squat hold', cue:'Heels elevated or supported is fine — arches up, knees out over the toes. Work toward flat over time', steps:[{label:'',secs:60}]},
-    ]},
+    sub:'Wake-up flow, about 8.5 min. Gentle first, then build up: rotate, flow, swing, bounce.',
+    ex:[X.neck,X.wrist,X.catcow,X.dogflow,X.crab,X.wgs,X.hipcirc,X.legswing,X.armcirc,X.shake,X.pogo]},
+  evening:{tab:'Evening',key:'mvmt_v4',rest:8,done:'Great work. Time to rest.',
+    sub:'About 15.5 min: active work for hips, feet and ankles, then wind down. Tap a level badge to change it.',
+    ex:[X.tspine,X.n9090,X.addrock,X.couch,X.toetuck,X.fig4,X.toeyoga,X.shortfoot,X.kot,X.squat,X.child,X.breath]},
+  long:{tab:'Friday long',key:'mvmt_v4',rest:8,done:'Great work. Enjoy the rest day.',
+    sub:'Rest-day version, about 21 min: shoulders and hamstrings, then the full evening.',
+    ex:[X.hang,X.door,X.angels,X.tspine,X.n9090,X.addrock,X.couch,X.toetuck,X.fig4,X.jeff,X.toeyoga,X.shortfoot,X.kot,X.coss,X.squat,X.child,X.breath]},
 };
-// Friday long = evening reset plus the five longer pieces, slotted where they fit
-(function(){
-  const e=ROUTINES.evening.ex;
-  const hang={name:'Dead hang', cue:'Fully passive — let everything decompress', steps:[{label:'',secs:30}]};
-  const door={name:'Doorway chest stretch', cue:'Forearm on the frame, step through and rotate away — opens the chest, opposite direction from the hands-down work', steps:[{label:'',secs:30}]};
-  const angels={name:'Wall Angels', cue:'Back flat to the wall, slide arms up and down — drive shoulder extension and external rotation', steps:[{label:'',secs:60}]};
-  const jeff={name:'Jefferson curl', cue:'6 slow reps — vertebra by vertebra, fully bodyweight', steps:[{label:'',secs:75}]};
-  const coss={name:'Cossack squat (held-support)', cue:'Hold onto a support for balance, sit deep and keep the heel down — build depth over time', steps:[{label:'Left side',secs:45},{label:'Right side',secs:45}]};
-  ROUTINES.long={tab:'Friday long',key:'mvmt_v4',rest:10,done:'Great work. Enjoy the rest day.',
-    sub:'Rest-day version, about 20 min. Evening reset plus hang, chest, shoulders, Jefferson and Cossack.',
-    ex:[hang,door,angels,e[0],e[1],e[2],e[3],e[4],jeff,e[5],e[6],e[7],e[8],coss,e[9]]};
-})();
+
+/* ---- Levels ---- */
+const LK='mvmt_levels_v1';
+function loadLevels(){try{return JSON.parse(localStorage.getItem(LK))||{};}catch(e){return{};}}
+function saveLevels(l){try{localStorage.setItem(LK,JSON.stringify(l));}catch(e){}}
+let LEVELS=loadLevels();
+function lvl(ex){return ex.levels?Math.min(LEVELS[ex.id]||0,ex.levels.length-1):0;}
+function cueOf(ex){return ex.levels?ex.levels[lvl(ex)].cue:ex.cue;}
+let sheetEx=null;
+function openLevels(ex){
+  sheetEx=ex;
+  document.getElementById('lv-title').textContent=ex.name;
+  const box=document.getElementById('lv-list');box.innerHTML='';
+  ex.levels.forEach((L,i)=>{
+    const d=document.createElement('div');
+    d.className='lv-item'+(i===lvl(ex)?' on':'');
+    d.innerHTML='<div class="lv-head">Level '+(i+1)+(i===lvl(ex)?' · current':'')+'</div><div class="lv-cue">'+L.cue+'</div><div class="lv-test">Move up when: '+L.test+'</div>';
+    d.onclick=()=>{LEVELS[ex.id]=i;saveLevels(LEVELS);closeLevels();renderList();};
+    box.appendChild(d);
+  });
+  document.getElementById('lv-sheet').classList.add('visible');
+}
+function closeLevels(){document.getElementById('lv-sheet').classList.remove('visible');}
 
 let RK=pickDefault();
 let EX=ROUTINES[RK].ex;
@@ -354,10 +434,13 @@ function renderList(){
     if(ex.steps.length===1) dur=ex.steps[0].secs+' sec';
     else if(ex.steps.length===2&&ex.steps[0].secs===ex.steps[1].secs) dur=ex.steps[0].secs+' sec each side';
     else dur=ex.steps.reduce((s,st)=>s+st.secs,0)+' sec total';
+    if(ex.steps.length===2&&ex.steps[0].secs!==ex.steps[1].secs) dur=ex.steps[0].secs+' s '+ex.steps[0].label.split(' ')[0].toLowerCase()+' · '+ex.steps[1].secs+' s '+ex.steps[1].label.split(' ')[0].toLowerCase();
+    const badge=ex.levels?'<span class="lv-badge">L'+(lvl(ex)+1)+'/'+ex.levels.length+'</span>':'';
     div.innerHTML=
       '<div class="ex-check">'+(isDone?'&#10003;':(i+1))+'</div>'+
-      '<div class="ex-body"><div class="ex-name">'+ex.name+'</div><div class="ex-cue">'+ex.cue+'</div></div>'+
+      '<div class="ex-body"><div class="ex-name">'+ex.name+' '+badge+'</div><div class="ex-cue">'+cueOf(ex)+'</div></div>'+
       '<div class="ex-duration">'+dur+'</div>';
+    if(ex.levels){const bEl=div.querySelector('.lv-badge');bEl.onclick=(e)=>{e.stopPropagation();openLevels(ex);};}
     list.appendChild(div);
   });
   const pct=(doneEx.size/TOTAL_EX)*100;
@@ -406,7 +489,8 @@ function showExercise(item){
   document.getElementById('ov-name').textContent=ex.name;
   document.getElementById('ov-side').textContent=st.label||'';
   document.getElementById('ov-side').style.color=st.label?'var(--accent)':'transparent';
-  document.getElementById('ov-cue').textContent=ex.cue;
+  document.getElementById('ov-cue').textContent=cueOf(ex);
+  document.getElementById('ov-name').textContent=ex.name+(ex.levels?' · L'+(lvl(ex)+1):'');
   document.getElementById('ov-time').textContent=fmt(ovRem);
   document.getElementById('ring').classList.remove('rest-ring');
   document.getElementById('ring').style.strokeDashoffset=0;
