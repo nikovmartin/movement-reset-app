@@ -373,7 +373,17 @@ function enVoices(){
       .sort((a,b)=>q(a)-q(b)||a.name.localeCompare(b.name));
   }catch(e){return[];}
 }
-function pickedVoice(){const vs=enVoices();return vs.find(v=>v.voiceURI===vPick.uri)||null;}
+function pickedVoice(){
+  const vs=enVoices();
+  const saved=vs.find(v=>v.voiceURI===vPick.uri);
+  if(saved) return saved;
+  // Defaults: Ava (best quality first), then Evan
+  for(const n of ['Ava','Evan']){
+    const v=vs.find(x=>x.name.split(' ')[0]===n);
+    if(v) return v;
+  }
+  return null;
+}
 function say(t,force){
   if((!voiceOn&&!force)||!('speechSynthesis' in window)) return;
   try{
