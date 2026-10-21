@@ -38,6 +38,28 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .vc-btn.on{background:var(--accent-dim);color:var(--accent);border-color:rgba(200,240,216,.4)}
 .vc-q{font-size:11px;color:var(--text2);font-weight:400;margin-left:6px}
 
+/* APP SWITCH + TRAINING */
+.app-sw{display:flex;background:var(--surface);border-radius:var(--rs);padding:2px}
+.app-tab{font-size:13px;font-weight:600;color:var(--text2);padding:6px 12px;border-radius:6px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.app-tab.on{background:var(--accent-dim);color:var(--accent)}
+.tr-block{padding:14px 20px 4px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.tr-block span{color:var(--text2);text-transform:none;letter-spacing:0;font-weight:500;margin-left:6px}
+.tr-item{display:flex;gap:12px;padding:10px 20px;border-bottom:.5px solid var(--border)}
+.tr-item .ex-name{font-size:14px}
+.tr-meta{font-size:12px;color:var(--text2);margin-top:2px}
+.tr-heavier{color:var(--accent);font-weight:600}
+.tr-target{font-size:15px;color:var(--text);margin-bottom:4px;text-align:center}
+.tr-last{font-size:12px;color:var(--text2);margin-bottom:10px;text-align:center;min-height:16px}
+.tr-log{display:none;gap:10px;margin-bottom:24px;width:100%;max-width:340px;justify-content:center}
+.tr-log.on{display:flex}
+.tr-field{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px;background:var(--surface);border-radius:var(--rs);padding:6px 6px 8px;flex:1;min-width:0}
+.tr-flabel{font-size:11px;color:var(--text3);text-transform:uppercase;font-weight:600;width:100%;text-align:center;margin-bottom:2px}
+.tr-field input{width:52px;background:var(--surface2);border:none;border-radius:6px;color:var(--text);font-size:20px;text-align:center;padding:8px 4px;font-family:inherit}
+.tr-field button{width:32px;height:32px;border-radius:50%;border:none;background:var(--surface2);color:var(--text);font-size:20px;font-family:inherit}
+.tr-sess{background:var(--surface);border-radius:var(--rs);padding:12px 14px;margin-bottom:10px}
+.tr-sess-h{font-size:14px;font-weight:600;margin-bottom:6px}
+.tr-sess-l{font-size:12px;color:var(--text2);line-height:1.6}
+
 /* TEST BANNER */
 .test-banner{display:none;margin:10px 20px 0;padding:12px 14px;border-radius:var(--rs);background:rgba(240,216,168,.1);border:.5px solid rgba(240,216,168,.35);color:var(--rest);font-size:13px;line-height:1.45}
 .test-banner.on{display:flex;gap:10px;align-items:flex-start}
@@ -142,7 +164,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 <!-- LIST SCREEN -->
 <div class="screen active" id="screen-list">
   <div class="nav">
-    <span class="nav-title">Movement Reset</span>
+    <span class="app-sw"><span class="app-tab on" onclick="showReset()">Reset</span><span class="app-tab" onclick="showTrain()">Training</span></span>
     <span><span class="nav-tab" id="voice-btn" onclick="openVoice()">Voice on</span><span class="nav-tab" onclick="showStats()">Streaks</span></span>
   </div>
   <div class="rt-tabs" id="rt-tabs"></div>
@@ -155,6 +177,57 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
     <span class="done-ct" id="done-ct">0 / 16</span>
     <button class="btn-pri" id="btn-go" onclick="startFromFirst()">Start routine</button>
   </div>
+</div>
+
+<!-- TRAINING SCREEN -->
+<div class="screen" id="screen-train">
+  <div class="nav">
+    <span class="app-sw"><span class="app-tab" onclick="showReset()">Reset</span><span class="app-tab on" onclick="showTrain()">Training</span></span>
+    <span><span class="nav-tab vbtn" onclick="openVoice()">Voice</span><span class="nav-tab" onclick="showTrHistory()">History</span></span>
+  </div>
+  <div class="rt-sub" id="tr-sub"></div>
+  <div class="list-wrap" id="tr-list"></div>
+  <div class="bottom-bar">
+    <button class="btn-sec" id="tr-discard" onclick="trDiscard()" style="display:none">Discard</button>
+    <button class="btn-pri" id="tr-go" onclick="trStart()">Start workout</button>
+  </div>
+</div>
+
+<!-- TRAINING HISTORY -->
+<div class="screen" id="screen-trhist">
+  <div class="nav">
+    <span class="nav-tab" onclick="showTrain()">Back</span>
+    <span class="nav-title">Training history</span>
+    <span class="nav-tab" onclick="trCopyLog()">Copy log</span>
+  </div>
+  <div class="stats-wrap" id="tr-hist"></div>
+</div>
+
+<!-- TRAINING OVERLAY -->
+<div class="overlay" id="tr-ov">
+  <div class="ov-step" id="tr-step"></div>
+  <div class="ov-name" id="tr-name"></div>
+  <div class="ov-side" id="tr-side"></div>
+  <div class="tr-target" id="tr-target"></div>
+  <div class="tr-last" id="tr-last"></div>
+  <div class="ov-cue" id="tr-cue"></div>
+  <div class="ring-wrap" id="tr-ringwrap">
+    <svg class="ring-svg" viewBox="0 0 190 190">
+      <circle class="ring-bg" cx="95" cy="95" r="83"/>
+      <circle class="ring-prog" id="tr-ring" cx="95" cy="95" r="83" stroke-dasharray="521" stroke-dashoffset="0"/>
+    </svg>
+    <div class="ring-time" id="tr-time"></div>
+  </div>
+  <div class="tr-log" id="tr-log">
+    <div class="tr-field"><div class="tr-flabel">kg</div><button onclick="trAdj('kg',-1)">−</button><input id="tr-kg" inputmode="decimal"><button onclick="trAdj('kg',1)">+</button></div>
+    <div class="tr-field"><div class="tr-flabel">reps</div><button onclick="trAdj('reps',-1)">−</button><input id="tr-reps" inputmode="numeric"><button onclick="trAdj('reps',1)">+</button></div>
+  </div>
+  <div class="ov-next-label" id="tr-next"></div>
+  <div class="ov-controls">
+    <button class="ov-btn ov-btn-sec" onclick="trPause()">Pause</button>
+    <button class="ov-btn ov-btn-pri" id="tr-main" onclick="trMain()">Done</button>
+  </div>
+  <div class="ov-skip" id="tr-skip" onclick="trSkip()">Skip</div>
 </div>
 
 <!-- STATS SCREEN -->
@@ -789,7 +862,7 @@ function showStats(){
   document.getElementById('screen-stats').classList.add('active');
   renderStats();
 }
-function showList(){
+function showList(){showReset();return;
   document.getElementById('screen-stats').classList.remove('active');
   document.getElementById('screen-list').classList.add('active');
 }
@@ -832,11 +905,241 @@ function renderStats(){
     '<div class="history-list">'+histHTML+'</div>';
 }
 
+
+/* =================== TRAINING (Sunday lower body) =================== */
+const TR_KEY='mvmt_train_v1', TR_CUR='mvmt_train_cur_v1';
+const TI={
+  bike:{name:'Easy bike or rower (optional)',type:'time',secs:180,cue:'Only on cold days. Easy pace. Skip if already warm'},
+  w_rdl:{name:'Single-leg RDL, light',type:'reps',target:'10 per leg',sides:1,cue:'Light kettlebell or none. Hips back, both hip bones facing down'},
+  w_bss:{name:'Split squat, bodyweight',type:'reps',target:'10 per leg',sides:1,cue:'Front shin roughly vertical, lean forward slightly'},
+  w_ht:{name:'Hip thrust, empty bar',type:'reps',target:'10',cue:'Squeeze the glutes 2 s at the top. This replaces the glute bridge'},
+  w_gob:{name:'Goblet squat, light',type:'reps',target:'10',cue:'Heels on the wedge, knees over the toes, arches up'},
+  stepdown:{name:'Lateral step-downs',type:'reps',target:'8 per leg',sides:1,cue:'15–20 cm box, 3 s down, heel taps the floor. Knee over 2nd–3rd toe, hips level'},
+  rdl:{name:'Single-leg RDL, kettlebell',type:'reps',target:'6–10',sides:1,log:1,cue:'Bell in the hand opposite the standing leg. 3 s down, 1 s pause. Feel it where hamstring meets glute'},
+  gob:{name:'Paused goblet squat',type:'reps',target:'6–10',log:1,cue:'Heels raised, band above knees. 3 s down, 3 s pause at the bottom'},
+  ankle:{name:'Weighted ankle bends (active rest)',type:'reps',target:'8 per side',sides:1,cue:'Half-kneeling, weight on the front knee. Knee over 2nd–3rd toe, heel down, arch held, 2 s at the end'},
+  bss:{name:'Bulgarian split squat',type:'reps',target:'6–10',sides:1,log:1,cue:'Front shin roughly vertical at the bottom, lean ~30°, dumbbells by the front foot'},
+  ht:{name:'Barbell hip thrust',type:'reps',target:'6–10',log:1,cue:'Upper back on the bench, shins vertical at the top. Chin tucked, ribs down, 2 s squeeze'},
+  sfbal:{name:'Short-foot balance (active rest)',type:'time',secs:30,sides:1,cue:'Barefoot on one leg, arch domed, knee soft over the 2nd–3rd toe'},
+  calf:{name:'Single-leg calf raise',type:'reps',target:'10 per leg',sides:1,log:1,cue:'2 s stretch at the bottom, rise over big toe and 2nd toe, 1 s hold'},
+  walks:{name:'Banded lateral walks',type:'reps',target:'15 steps each way',cue:'Band at the ankles, quarter squat, toes forward, no knee cave'},
+  copen:{name:'Copenhagen plank, short lever',type:'time',secs:20,sides:1,cue:'Top knee on the bench, hips in a straight line. Stop if the groin pinches'},
+  bands:{name:'Band pull-aparts + external rotations',type:'reps',target:'15 + 15',cue:'Arms straight, squeeze the shoulder blades. Then elbows at the sides, rotate the band out'},
+};
+const DELOAD_DAYS=[['2026-11-23','2026-11-29'],['2026-12-20','2026-12-27'],['2027-01-25','2027-01-31']];
+function trDeload(){const t=todayStr();return DELOAD_DAYS.some(([a,b])=>t>=a&&t<=b);}
+function trPlan(){
+  const d=trDeload();
+  return [
+    {name:'Warm-up round',sets:1,rest:20,items:['bike','w_rdl','w_bss','w_ht','w_gob','stepdown']},
+    {name:'Round 1',sets:d?2:3,rest:40,items:['rdl','gob','ankle']},
+    {name:'Round 2',sets:d?2:3,rest:40,items:['bss','ht','sfbal']},
+    {name:'Round 3',sets:2,rest:30,items:['calf','walks','copen','bands']},
+  ];
+}
+function trLoad(){try{return JSON.parse(localStorage.getItem(TR_KEY))||{sessions:[]};}catch(e){return{sessions:[]};}}
+function trSave(d){try{localStorage.setItem(TR_KEY,JSON.stringify(d));}catch(e){}}
+function trLast(id,side){
+  const ss=trLoad().sessions;
+  for(let i=ss.length-1;i>=0;i--){const sets=ss[i].sets.filter(x=>x.id===id&&(x.side||'')===(side||''));if(sets.length)return sets;}
+  return null;
+}
+function trHeavier(id,side){const l=trLast(id,side);return !!(l&&l.length>=2&&l.every(x=>x.reps>=10));}
+function lastStr(id,side){const l=trLast(id,side);return l?l.map(x=>(x.kg?x.kg+' kg × ':'')+x.reps).join(', '):'';}
+
+let TQ=[],tPos=0,tCur=null,tTimer=null,tRem=0,tTot=0,tPhase='work',tPaused=false;
+function trBuild(){
+  TQ=[];
+  trPlan().forEach((b,bi)=>{
+    for(let st=1;st<=b.sets;st++){
+      b.items.forEach((id,ii)=>{
+        const it=TI[id];const sides=it.sides?['Right side','Left side']:[''];
+        sides.forEach((sd,si)=>{
+          const lastOfRound=ii===b.items.length-1&&si===sides.length-1;
+          const rest=si<sides.length-1?10:(lastOfRound?(st<b.sets?60:(bi<3?60:0)):b.rest);
+          TQ.push({b:bi,block:b.name,set:st,sets:b.sets,id,side:sd,rest});
+        });
+      });
+    }
+  });
+}
+function saveCur(){try{localStorage.setItem(TR_CUR,JSON.stringify({date:todayStr(),pos:tPos,cur:tCur}));}catch(e){}}
+function loadCur(){try{const c=JSON.parse(localStorage.getItem(TR_CUR));return c&&c.cur?c:null;}catch(e){return null;}}
+function clearCur(){try{localStorage.removeItem(TR_CUR);}catch(e){}}
+
+function renderTrain(){
+  const plan=trPlan(),cur=loadCur();
+  document.getElementById('tr-sub').innerHTML=(trDeload()?'<b style="color:var(--rest)">Deload week:</b> 2 sets in rounds 1–2, keep the weights easy. ':'')+'Lower body, about 60–65 min. Stop 1–2 reps before failure; go heavier when every set hits 10.';
+  const box=document.getElementById('tr-list');box.innerHTML='';
+  plan.forEach(b=>{
+    const h=document.createElement('div');h.className='tr-block';h.innerHTML=b.name+'<span>'+b.sets+(b.sets>1?' sets':' set')+'</span>';box.appendChild(h);
+    b.items.forEach(id=>{
+      const it=TI[id];const d=document.createElement('div');d.className='tr-item';
+      let meta=it.type==='time'?(it.secs>=60?(it.secs/60)+' min':it.secs+' s')+(it.sides?' per side':''):it.target;
+      if(it.log){
+        const sides=it.sides?['Right side','Left side']:[''];
+        const ls=sides.map(sd=>{const l=lastStr(id,sd);return l?(sd?sd.split(' ')[0]+': ':'Last: ')+l+(trHeavier(id,sd)?' <span class="tr-heavier">→ go heavier</span>':''):'';}).filter(Boolean);
+        if(ls.length) meta+='<br>'+ls.join('<br>');
+      }
+      d.innerHTML='<div class="ex-body"><div class="ex-name">'+it.name+'</div><div class="tr-meta">'+meta+'</div></div>';
+      box.appendChild(d);
+    });
+  });
+  document.getElementById('tr-go').textContent=cur?'Resume workout':'Start workout';
+  document.getElementById('tr-discard').style.display=cur?'':'none';
+}
+function trStart(){
+  unlockAudio();keepAwake();trBuild();
+  const c=loadCur();
+  if(c){tPos=Math.min(c.pos,TQ.length-1);tCur=c.cur;}else{tPos=0;tCur={date:todayStr(),start:Date.now(),sets:[]};}
+  saveCur();
+  document.getElementById('tr-ov').classList.add('visible');
+  trShowWork(true);
+}
+function trDiscard(){clearCur();renderTrain();}
+function trClear(){if(tTimer){clearInterval(tTimer);tTimer=null;}}
+function trSay(q){
+  const it=TI[q.id];let t=it.name.replace(/\(.*?\)/g,'').trim();
+  if(q.side)t+=', '+q.side.toLowerCase();
+  if(it.type==='reps'&&/^\d|–/.test(it.target))t+=', '+it.target.replace('–',' to ').replace('per leg','').replace('per side','')+' reps';
+  say(t.replace(/\s+/g,' '));
+}
+function trShowWork(announce){
+  trClear();tPhase='work';
+  const q=TQ[tPos],it=TI[q.id];
+  document.getElementById('tr-step').textContent=q.block+(q.sets>1?' · set '+q.set+' of '+q.sets:'');
+  document.getElementById('tr-name').textContent=it.name;
+  const sd=document.getElementById('tr-side');sd.textContent=q.side||'';sd.style.color='var(--accent)';
+  document.getElementById('tr-target').textContent=it.type==='time'?'':('Target: '+it.target);
+  document.getElementById('tr-last').innerHTML=it.log&&lastStr(q.id,q.side)?'Last time: '+lastStr(q.id,q.side)+(trHeavier(q.id,q.side)?' <span class="tr-heavier">→ go heavier</span>':''):'';
+  document.getElementById('tr-cue').textContent=it.cue;
+  document.getElementById('tr-log').classList.remove('on');
+  const nx=TQ[tPos+1];document.getElementById('tr-next').textContent=nx?'Next: '+TI[nx.id].name+(nx.side?' — '+nx.side:''):'Last one';
+  document.getElementById('tr-skip').textContent='Skip';
+  const ring=document.getElementById('tr-ring');ring.classList.remove('rest-ring');ring.style.strokeDashoffset=0;
+  document.getElementById('tr-main').classList.remove('rest-btn');
+  if(announce)trSay(q);
+  if(it.type==='time'){
+    document.getElementById('tr-ringwrap').style.display='';
+    tRem=tTot=it.secs;document.getElementById('tr-time').textContent=fmt(tRem);
+    document.getElementById('tr-main').textContent='Start';
+  } else {
+    document.getElementById('tr-ringwrap').style.display='none';
+    document.getElementById('tr-main').textContent='Done';
+  }
+}
+function trTick(onEnd){
+  trClear();tPaused=false;
+  tTimer=setInterval(()=>{
+    tRem--;document.getElementById('tr-time').textContent=fmt(tRem);
+    document.getElementById('tr-ring').style.strokeDashoffset=CIRC*(1-(tRem/tTot));
+    if(tPhase==='work'&&tRem>0&&tRem<=3)playBeep('tick');
+    if(tRem<=0){trClear();onEnd();}
+  },1000);
+}
+function trMain(){
+  unlockAudio();
+  const q=TQ[tPos],it=TI[q.id];
+  if(tPhase==='work'){
+    if(it.type==='time'){
+      if(tTimer){trClear();document.getElementById('tr-main').textContent='Resume';return;}
+      document.getElementById('tr-main').textContent='Pause';
+      trTick(()=>{playBeep('done');trAfterWork();});
+      return;
+    }
+    if(it.log){trShowLog();return;}
+    trAfterWork();
+  } else if(tPhase==='log'){
+    const kg=parseFloat(String(document.getElementById('tr-kg').value).replace(',','.'))||0;
+    const reps=parseInt(document.getElementById('tr-reps').value)||0;
+    tCur.sets.push({id:q.id,side:q.side,set:q.set,kg,reps});saveCur();
+    trAfterWork();
+  } else if(tPhase==='rest'){
+    trNext();
+  }
+}
+function trShowLog(){
+  tPhase='log';const q=TQ[tPos];
+  const prevToday=tCur.sets.filter(x=>x.id===q.id&&x.side===q.side);
+  const last=trLast(q.id,q.side);
+  const ref=prevToday.length?prevToday[prevToday.length-1]:(last?last[Math.min(q.set-1,last.length-1)]:null);
+  document.getElementById('tr-kg').value=ref?ref.kg:'';
+  document.getElementById('tr-reps').value=ref?ref.reps:8;
+  document.getElementById('tr-log').classList.add('on');
+  document.getElementById('tr-main').textContent='Save';
+}
+function trAdj(f,dir){
+  const el=document.getElementById('tr-'+f);let v=parseFloat(String(el.value).replace(',','.'))||0;
+  v=f==='kg'?Math.max(0,Math.round((v+dir*2)*10)/10):Math.max(0,v+dir);el.value=v;
+}
+function trAfterWork(){
+  const q=TQ[tPos];
+  if(tPos>=TQ.length-1){trFinish();return;}
+  if(!q.rest){trNext();return;}
+  tPhase='rest';tRem=tTot=q.rest;
+  const nx=TQ[tPos+1],it=TI[nx.id];
+  document.getElementById('tr-step').textContent='Rest';
+  document.getElementById('tr-name').textContent=it.name;
+  const sd=document.getElementById('tr-side');sd.textContent=nx.side||'Get ready';sd.style.color='var(--rest)';
+  document.getElementById('tr-target').textContent=nx.block+(nx.sets>1?' · set '+nx.set+' of '+nx.sets:'');
+  document.getElementById('tr-last').textContent='';document.getElementById('tr-cue').textContent='';
+  document.getElementById('tr-log').classList.remove('on');
+  document.getElementById('tr-ringwrap').style.display='';
+  const ring=document.getElementById('tr-ring');ring.classList.add('rest-ring');ring.style.strokeDashoffset=0;
+  document.getElementById('tr-time').textContent=fmt(tRem);
+  document.getElementById('tr-main').textContent='Skip rest';document.getElementById('tr-main').classList.add('rest-btn');
+  document.getElementById('tr-next').textContent='';document.getElementById('tr-skip').textContent='';
+  if(nx.id===q.id&&nx.side&&nx.side!==q.side)say('Switch to the '+nx.side.toLowerCase());else trSay(nx);
+  trTick(()=>{playBeep('go');trNext();});
+}
+function trNext(){trClear();tPos++;saveCur();trShowWork(false);}
+function trSkip(){if(tPhase==='rest')return;trClear();if(tPos>=TQ.length-1){trFinish();return;}tPos++;saveCur();trShowWork(true);}
+function trPause(){trClear();saveCur();releaseAwake();document.getElementById('tr-ov').classList.remove('visible');renderTrain();}
+function trFinish(){
+  trClear();
+  const d=trLoad();tCur.mins=Math.round((Date.now()-(tCur.start||Date.now()))/60000);
+  d.sessions.push(tCur);trSave(d);clearCur();releaseAwake();
+  document.getElementById('tr-ov').classList.remove('visible');
+  say('Workout complete. Great work');
+  renderTrain();showTrHistory();
+}
+function trSessionText(s){
+  const by={};s.sets.forEach(x=>{const k=x.id+'|'+(x.side||'');(by[k]=by[k]||[]).push(x);});
+  return Object.keys(by).map(k=>{const [id,sd]=k.split('|');return TI[id].name.replace(/,.*$/,'')+(sd?' ('+sd.split(' ')[0]+')':'')+': '+by[k].map(x=>(x.kg?x.kg+'kg×':'')+x.reps).join(', ');});
+}
+function showTrHistory(){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById('screen-trhist').classList.add('active');
+  const ss=trLoad().sessions.slice().reverse();
+  document.getElementById('tr-hist').innerHTML=ss.length?ss.map(s=>{
+    const dt=new Date(s.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    return '<div class="tr-sess"><div class="tr-sess-h">'+dt+(s.mins?' · '+s.mins+' min':'')+'</div><div class="tr-sess-l">'+trSessionText(s).join('<br>')+'</div></div>';
+  }).join(''):'<div class="empty">No workouts logged yet.</div>';
+}
+function trCopyLog(){
+  const ss=trLoad().sessions;
+  const txt=ss.length?ss.map(s=>s.date+(s.mins?' ('+s.mins+' min)':'')+'\n'+trSessionText(s).join('\n')).join('\n\n'):'No workouts logged yet.';
+  const done=()=>say('Log copied',true);
+  try{navigator.clipboard.writeText(txt).then(done,()=>fallbackCopy(txt));}catch(e){fallbackCopy(txt);}
+}
+function fallbackCopy(t){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');}catch(e){}a.remove();}
+function showTrain(){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById('screen-train').classList.add('active');renderTrain();
+  try{localStorage.setItem('mvmt_tab_v1','train');}catch(e){}
+}
+function showReset(){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById('screen-list').classList.add('active');
+  try{localStorage.setItem('mvmt_tab_v1','reset');}catch(e){}
+}
+
 buildQueue();
 renderTabs();
 renderVoice();
 renderBanner();
 renderList();
+try{if(localStorage.getItem('mvmt_tab_v1')==='train')showTrain();}catch(e){}
 </script>
 </body>
 </html>
