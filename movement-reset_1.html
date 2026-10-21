@@ -365,6 +365,7 @@ function renderVoice(){const b=document.getElementById('voice-btn');if(b)b.textC
 function toggleVoice(){voiceOn=!voiceOn;try{localStorage.setItem(VK,voiceOn?'on':'off');}catch(e){}renderVoice();if(!voiceOn)try{speechSynthesis.cancel();}catch(e){}else say('Voice on');if(document.getElementById('vc-sheet').classList.contains('visible'))renderVoiceSheet();}
 const VSK='mvmt_voice_pick_v1';
 let vPick=(function(){try{return JSON.parse(localStorage.getItem(VSK))||{};}catch(e){return{};}})(); // {uri, rate}
+if(vPick.rate===0.9)vPick.rate=0.8;
 function saveVPick(){try{localStorage.setItem(VSK,JSON.stringify(vPick));}catch(e){}}
 function vQual(v){const t=(v.name+' '+v.voiceURI).toLowerCase();return t.includes('premium')?0:(t.includes('enhanced')?1:2);}
 const NOVELTY=/^(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|kathy|ralph|eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley)\b/i;
@@ -385,15 +386,22 @@ function pickedVoice(){
   }
   return null;
 }
+let sayTimer=null;
 function say(t,force){
   if((!voiceOn&&!force)||!('speechSynthesis' in window)) return;
   try{
     speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(t);
-    const v=pickedVoice();
-    if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-GB';
-    u.rate=vPick.rate||0.9;u.pitch=1;
-    speechSynthesis.speak(u);
+    clearTimeout(sayTimer);
+    // Safari can keep old settings if speech restarts instantly after cancel, so wait a moment
+    sayTimer=setTimeout(()=>{
+      try{
+        const u=new SpeechSynthesisUtterance(t);
+        const v=pickedVoice();
+        if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-GB';
+        u.rate=vPick.rate||0.8;u.pitch=1;
+        speechSynthesis.speak(u);
+      }catch(e){}
+    },120);
   }catch(e){}
 }
 const SAMPLE='Couch stretch, left side, level 1';
@@ -401,8 +409,8 @@ function renderVoiceSheet(){
   document.getElementById('vc-onoff').textContent=voiceOn?'Voice is on (tap to turn off)':'Voice is off (tap to turn on)';
   document.getElementById('vc-onoff').classList.toggle('on',voiceOn);
   const sp=document.getElementById('vc-speed');sp.innerHTML='';
-  [['Slow',0.8],['Calm',0.9],['Normal',1.0]].forEach(([n,r])=>{
-    const b=document.createElement('button');b.className='vc-btn'+((vPick.rate||0.9)===r?' on':'');b.textContent=n;
+  [['Slow',0.6],['Calm',0.8],['Normal',1.0]].forEach(([n,r])=>{
+    const b=document.createElement('button');b.className='vc-btn'+((vPick.rate||0.8)===r?' on':'');b.textContent=n;
     b.onclick=()=>{vPick.rate=r;saveVPick();renderVoiceSheet();say(SAMPLE,true);};sp.appendChild(b);
   });
   const box=document.getElementById('vc-list');box.innerHTML='';
