@@ -377,7 +377,7 @@ const X={
   child:{name:"Child's pose", cue:'Knees wide, arms long, forehead down. Let the hips sink and breathe into the back', steps:ONE(60)},
   chin:{name:'Chin tucks', cue:'Lying on your back, glide the chin straight back (a double chin), no nodding. Hold 5 s, release. 10 reps', steps:ONE(60)},
   breath:{name:'Breathing', cue:'Lying on your back, knees bent. Breathe in through the nose for 4 s, out slowly for 6–8 s', steps:ONE(60)},
-  // ---------- Friday extras ----------
+  // ---------- Tuesday loaded mobility extras ----------
   hang:{name:'Dead hang', cue:'Fully passive — let everything decompress', steps:ONE(30)},
   door:{name:'Doorway chest stretch', cue:'Forearm on the frame, step through and rotate away — opens the chest', steps:LS(30)},
   angels:{name:'Wall angels', cue:'Back flat to the wall, slide arms up and down — shoulder extension and external rotation', steps:ONE(60)},
@@ -958,7 +958,7 @@ const TI={
   f_breath:{name:'Breathing',type:'time',secs:60,cue:'Lying down, in for 4 s, out slowly for 6–8 s'},
   bands:{name:'Band pull-aparts + external rotations',type:'reps',target:'15 + 15',cue:'Arms straight, squeeze the shoulder blades. Then elbows at the sides, rotate the band out'},
 };
-const DELOAD_DAYS=[['2026-11-23','2026-11-29'],['2026-12-20','2026-12-27'],['2027-01-25','2027-01-31']];
+const DELOAD_DAYS=[['2026-11-23','2026-11-29'],['2026-12-20','2026-12-27'],['2027-01-25','2027-01-31'],['2027-02-22','2027-02-28'],['2027-03-22','2027-03-28']];
 function trDeload(){const t=todayStr();return DELOAD_DAYS.some(([a,b])=>t>=a&&t<=b);}
 const WORKOUTS={
   sun:{name:'Sunday lower body',short:'Sunday',
@@ -969,7 +969,7 @@ const WORKOUTS={
       {name:'Round 2',sets:d?2:3,rest:40,items:['bss','ht','sfbal']},
       {name:'Round 3',sets:2,rest:30,items:['calf','walks','copen','bands']},
     ]},
-  fri:{name:'Friday loaded mobility',short:'Friday',
+  fri:{name:'Tuesday loaded mobility',short:'Tuesday',
     sub:'Loaded mobility, about 25 min. Slow and controlled at end range, start light; go heavier (2 kg) when every set hits the top of the range.',
     plan:d=>[
       {name:'Warm-up',sets:1,rest:15,items:['f_catcow','f_dog','f_halo']},
@@ -983,7 +983,7 @@ const WK_KEY='mvmt_train_wk_v1';
 function trWk(){
   const c=loadCur();if(c&&c.cur)return c.cur.wk||'sun';
   try{const w=localStorage.getItem(WK_KEY);if(w&&WORKOUTS[w])return w;}catch(e){}
-  return new Date().getDay()===5?'fri':'sun';
+  return new Date().getDay()===2?'fri':'sun';
 }
 function trSetWk(w){
   if(loadCur())return;
