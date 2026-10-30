@@ -287,7 +287,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 <div class="lv-sheet" id="vc-sheet" onclick="if(event.target===this)closeVoice()">
   <div class="lv-panel">
     <div class="lv-title">Voice</div>
-    <div class="lv-sub">Tap a voice to hear it and select it. Calmer voices: download "Enhanced" or "Premium" ones in iPhone Settings → Accessibility → Spoken Content → Voices → English.</div>
+    <div class="lv-sub">Voice: Samantha. Pick the speed below.</div>
     <div class="vc-row"><button class="vc-btn" id="vc-onoff" onclick="toggleVoice()"></button></div>
     <div class="vc-row" id="vc-speed"></div>
     <div id="vc-list"></div>
@@ -469,16 +469,13 @@ function enVoices(){
   }catch(e){return[];}
 }
 function pickedVoice(){
-  const vs=enVoices();
-  const saved=vs.find(v=>v.voiceURI===vPick.uri);
-  if(saved) return saved;
-  // Defaults: Ava (best quality first), then Evan, then Samantha
-  for(const n of ['Ava','Evan','Samantha']){
-    const v=vs.filter(x=>x.name.split(' ')[0]===n).sort((a,b)=>vQual(a)-vQual(b))[0];
-    if(v) return v;
-  }
-  return null;
+  // Samantha only (best of her versions if several are installed)
+  try{
+    return speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang)&&v.name.split(' ')[0]==='Samantha')
+      .sort((a,b)=>vQual(a)-vQual(b))[0]||null;
+  }catch(e){return null;}
 }
+try{speechSynthesis.getVoices();}catch(e){} // start loading voices early
 let sayTimer=null;
 function say(t,force){
   if((!voiceOn&&!force)||!('speechSynthesis' in window)) return;
@@ -486,15 +483,20 @@ function say(t,force){
     speechSynthesis.cancel();
     clearTimeout(sayTimer);
     // Safari can keep old settings if speech restarts instantly after cancel, so wait a moment
-    sayTimer=setTimeout(()=>{
+    let tries=0;
+    const go=()=>{
       try{
-        const u=new SpeechSynthesisUtterance(t);
         const v=pickedVoice();
-        if(v){u.voice=v;u.lang=v.lang;}else u.lang='en-GB';
+        // Voices load late on iPhone: wait up to ~2 s for Samantha instead of falling back to another voice
+        if(!v&&tries++<20){sayTimer=setTimeout(go,100);return;}
+        const u=new SpeechSynthesisUtterance(t);
+        if(v)u.voice=v;
+        u.lang='en-US';
         u.rate=vPick.rate||0.8;u.pitch=1;
         speechSynthesis.speak(u);
       }catch(e){}
-    },120);
+    };
+    sayTimer=setTimeout(go,120);
   }catch(e){}
 }
 const SAMPLE='Couch stretch, left side, level 1';
@@ -506,18 +508,7 @@ function renderVoiceSheet(){
     const b=document.createElement('button');b.className='vc-btn'+((vPick.rate||0.8)===r?' on':'');b.textContent=n;
     b.onclick=()=>{vPick.rate=r;saveVPick();renderVoiceSheet();say(SAMPLE,true);};sp.appendChild(b);
   });
-  const box=document.getElementById('vc-list');box.innerHTML='';
-  const vs=enVoices();
-  if(!vs.length){box.innerHTML='<div class="lv-sub">No voices loaded yet. Close and reopen this panel.</div>';return;}
-  const cur=pickedVoice();
-  vs.forEach(v=>{
-    const d=document.createElement('div');
-    d.className='lv-item'+(cur&&cur.voiceURI===v.voiceURI?' on':'');
-    const qual=['Premium','Enhanced',''][vQual(v)];
-    d.innerHTML='<div class="lv-cue">'+v.name.replace(/\s*\((premium|enhanced)\)/i,'')+(qual?'<span class="vc-q">'+qual+'</span>':'')+'</div><div class="lv-test">'+v.lang+(cur&&cur.voiceURI===v.voiceURI?' · selected':'')+'</div>';
-    d.onclick=()=>{vPick.uri=v.voiceURI;saveVPick();renderVoiceSheet();say(SAMPLE,true);};
-    box.appendChild(d);
-  });
+  const box=document.getElementById('vc-list');box.innerHTML=pickedVoice()?'':'<div class="lv-sub">Samantha is still loading. Close and reopen this panel.</div>';
 }
 function openVoice(){unlockAudio();renderVoiceSheet();document.getElementById('vc-sheet').classList.add('visible');}
 function closeVoice(){document.getElementById('vc-sheet').classList.remove('visible');}
