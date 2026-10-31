@@ -287,7 +287,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 <div class="lv-sheet" id="vc-sheet" onclick="if(event.target===this)closeVoice()">
   <div class="lv-panel">
     <div class="lv-title">Voice</div>
-    <div class="lv-sub">Voice: Samantha. Pick the speed below.</div>
+    <div class="lv-sub">Voice: Samantha, calm speed.</div>
     <div class="vc-row"><button class="vc-btn" id="vc-onoff" onclick="toggleVoice()"></button></div>
     <div class="vc-row" id="vc-speed"></div>
     <div id="vc-list"></div>
@@ -492,7 +492,7 @@ function say(t,force){
         const u=new SpeechSynthesisUtterance(t);
         if(v)u.voice=v;
         u.lang='en-US';
-        u.rate=vPick.rate||0.8;u.pitch=1;
+        u.rate=0.8;u.pitch=1;
         speechSynthesis.speak(u);
       }catch(e){}
     };
@@ -503,11 +503,7 @@ const SAMPLE='Couch stretch, left side, level 1';
 function renderVoiceSheet(){
   document.getElementById('vc-onoff').textContent=voiceOn?'Voice is on (tap to turn off)':'Voice is off (tap to turn on)';
   document.getElementById('vc-onoff').classList.toggle('on',voiceOn);
-  const sp=document.getElementById('vc-speed');sp.innerHTML='';
-  [['Slow',0.6],['Calm',0.8],['Normal',1.0]].forEach(([n,r])=>{
-    const b=document.createElement('button');b.className='vc-btn'+((vPick.rate||0.8)===r?' on':'');b.textContent=n;
-    b.onclick=()=>{vPick.rate=r;saveVPick();renderVoiceSheet();say(SAMPLE,true);};sp.appendChild(b);
-  });
+  document.getElementById('vc-speed').innerHTML='';
   const box=document.getElementById('vc-list');box.innerHTML=pickedVoice()?'':'<div class="lv-sub">Samantha is still loading. Close and reopen this panel.</div>';
 }
 function openVoice(){unlockAudio();renderVoiceSheet();document.getElementById('vc-sheet').classList.add('visible');}
@@ -563,7 +559,7 @@ function unlockAudio(){
   try{
     if(!actx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;actx=new C();}
     if(actx.state!=='running') actx.resume();
-    try{if('speechSynthesis' in window&&!window._spk){window._spk=1;const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);}}catch(e){}
+    try{if('speechSynthesis' in window&&!window._spk){window._spk=1;const u=new SpeechSynthesisUtterance(' ');u.volume=0;u.rate=0.8;u.lang='en-US';speechSynthesis.speak(u);}}catch(e){}
     const b=actx.createBuffer(1,1,22050),s=actx.createBufferSource();
     s.buffer=b;s.connect(actx.destination);s.start(0);
   }catch(e){}
