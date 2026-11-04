@@ -344,10 +344,20 @@ const ONE=s=>[{label:'',secs:s}];
 const X={
   // ---------- morning ----------
   neck:{name:'Neck releases', cue:'Three directions — forward, left, right. Slow and gentle', steps:ONE(20)},
-  wrist:{name:'Wrist prep', cue:'Circles: slow wrist circles both ways and open-close the fists. Forward rocks: on all fours, palms flat, fingers forward, gently rock the shoulders over the hands and back. Back rocks: backs of the hands on the floor, fingers toward the knees, rock back gently. Light, never forced', steps:[{label:'Circles',secs:20},{label:'Forward rocks',secs:20},{label:'Back rocks',secs:20}]},
-  catcow:{name:'Cat-Cow into Thread-the-Needle', cue:'Round and arch through cat-cow, then rotate open into thread-the-needle', steps:[{label:'Cat-Cow',secs:20},{label:'Left side',secs:20},{label:'Right side',secs:20}]},
-  dogflow:{name:'Down dog to up dog flow', cue:'Down dog: knees bent, lengthen the back first, then pedal the heels for the calves. Cobras: low and easy, hips on the floor. Flow: move slowly between down dog and up dog', steps:[{label:'Down dog',secs:30},{label:'Low cobras',secs:30},{label:'Down dog to up dog',secs:30}]},
-  crab:{name:'Crab hold', cue:'Sit, hands behind you, fingers pointing back (or sideways if the wrists complain). Lift the hips to a tabletop, press the chest up, shoulders back and down', steps:[{label:'Round 1',secs:20,rest:15},{label:'Round 2',secs:20}]},
+  wrist:{name:'Wrist prep', cue:'Four gentle 20 s parts: circles, forward rocks, reverse rocks, back-of-hand rocks. Light, never forced', steps:[
+    {label:'Circles',secs:20,cue:'Slow wrist circles both ways, then open and close the fists'},
+    {label:'Forward rocks',secs:20,cue:'On all fours, palms flat, fingers forward. Gently rock the shoulders over the hands and back'},
+    {label:'Reverse rocks',secs:20,cue:'Palms flat, fingers pointing back toward the knees. Gently lean back to stretch the inside of the forearms'},
+    {label:'Back-of-hand rocks',secs:20,cue:'Backs of the hands on the floor, fingers toward the knees. Rock back gently, very light'}]},
+  catcow:{name:'Cat-Cow into Thread-the-Needle', cue:'Cat-cow, then thread-the-needle on each side', steps:[
+    {label:'Cat-Cow',secs:20,cue:'On all fours. Round the back up, then let it arch down, slowly with the breath'},
+    {label:'Left side',secs:20,cue:'Thread the left arm under the body, shoulder and ear to the floor, then rotate open and reach up'},
+    {label:'Right side',secs:20,cue:'Thread the right arm under the body, shoulder and ear to the floor, then rotate open and reach up'}]},
+  dogflow:{name:'Down dog to up dog flow', cue:'Down dog, low cobras, then flow between down dog and up dog', steps:[
+    {label:'Down dog',secs:30,cue:'Knees bent, lengthen the back first, then pedal the heels for the calves'},
+    {label:'Low cobras',secs:30,cue:'Lying on the belly, hips down. Lift the chest a little and lower, easy and low'},
+    {label:'Down dog to up dog',secs:30,cue:'Flow slowly between down dog and up dog with the breath'}]},
+  crab:{name:'Crab hold', cue:'Sit, hands behind you, fingers pointing back (or sideways if the wrists complain). Lift the hips to a tabletop, press the chest up, shoulders back and down', steps:[{label:'Round 1',secs:20,rest:15},{label:'Round 2',secs:20,cue:'Same again: hips up, chest open, shoulders back and down'}]},
   wgs:{name:"World's Greatest Stretch", cue:'Lunge, elbow to instep, rotate open and reach tall — slow and flowing, not a long hold', steps:LS(30)},
   hipcirc:{name:'Standing hip circles', cue:'Knee lifts up, opens out and around — slow, both directions, tall posture', steps:ONE(30)},
   legswing:{name:'Leg swings', cue:'Hand on a wall: 10 front-to-back, then 10 side-to-side — relaxed, growing range', steps:[{label:'Left leg',secs:30},{label:'Right leg',secs:30}]},
@@ -403,7 +413,7 @@ const X={
 
 const ROUTINES={
   morning:{tab:'Morning',key:'mvmt_morning_v1',rest:5,done:'Body is awake. Have a good day.',
-    sub:'Wake-up flow, about 9.5 min. Gentle first, then build up: rotate, flow, swing, bounce.',
+    sub:'Wake-up flow, about 10 min. Gentle first, then build up: rotate, flow, swing, bounce.',
     ex:[X.neck,X.wrist,X.catcow,X.dogflow,X.crab,X.wgs,X.legswing,X.armcirc,X.shake,X.pogo]},
   evening:{tab:'Evening',key:'mvmt_v4',rest:8,done:'Great work. Time to rest.',
     sub:'About 16.5 min: active work for hips, feet and ankles, then wind down. Tap a level badge to change it.',
@@ -726,7 +736,7 @@ function showExercise(item){
   document.getElementById('ov-name').textContent=ex.name;
   document.getElementById('ov-side').textContent=st.label||'';
   document.getElementById('ov-side').style.color=st.label?'var(--accent)':'transparent';
-  document.getElementById('ov-cue').textContent=cueOf(ex);
+  document.getElementById('ov-cue').textContent=st.cue||cueOf(ex);
   document.getElementById('ov-name').textContent=ex.name+(ex.levels?' · L'+(lvl(ex)+1):'');
   document.getElementById('ov-time').textContent=fmt(ovRem);
   document.getElementById('ring').classList.remove('rest-ring');
