@@ -61,6 +61,10 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
 .tr-sess-l{font-size:12px;color:var(--text2);line-height:1.6}
 
 .tr-links{display:flex;gap:18px;justify-content:center}
+.tr-note{font-size:12px;color:var(--text);background:var(--surface2);border-radius:var(--rs);padding:6px 10px;margin:-4px auto 10px;max-width:340px;text-align:center}
+.tr-note b{color:var(--accent);font-weight:600}
+#nt-text{width:100%;min-height:90px;box-sizing:border-box;background:var(--surface2);color:var(--text);border:none;border-radius:var(--rs);padding:10px;font:inherit;font-size:15px;margin-bottom:10px}
+.nt-save{width:100%;padding:12px;background:var(--accent);border:none;border-radius:var(--rs);color:var(--bg);font-size:15px;font-weight:600;font-family:inherit;margin-bottom:6px}
 .tr-item.done .ex-name{color:var(--text3)}
 .tr-item .tr-st{font-size:12px;color:var(--accent);margin-left:auto;flex-shrink:0;align-self:center}
 .tr-item.cur{background:var(--accent-dim)}
@@ -220,6 +224,7 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
   <div class="ov-side" id="tr-side"></div>
   <div class="tr-target" id="tr-target"></div>
   <div class="tr-last" id="tr-last"></div>
+  <div class="tr-note" id="tr-note" style="display:none"></div>
   <div class="ov-cue" id="tr-cue"></div>
   <div class="ring-wrap" id="tr-ringwrap">
     <svg class="ring-svg" viewBox="0 0 190 190">
@@ -237,7 +242,18 @@ body{display:flex;flex-direction:column;min-height:100vh;min-height:-webkit-fill
     <button class="ov-btn ov-btn-sec" onclick="trBack()">Back</button>
     <button class="ov-btn ov-btn-pri" id="tr-main" onclick="trMain()">Done</button>
   </div>
-  <div class="tr-links"><span class="ov-skip" id="tr-skip" onclick="trSkip()">Skip</span><span class="ov-skip" id="tr-end" onclick="trEndTap(this)">End workout</span></div>
+  <div class="tr-links"><span class="ov-skip" id="tr-skip" onclick="trSkip()">Skip</span><span class="ov-skip" id="tr-notebtn" onclick="trNoteOpen()">Note</span><span class="ov-skip" id="tr-end" onclick="trEndTap(this)">End workout</span></div>
+</div>
+
+<!-- NOTE SHEET -->
+<div class="lv-sheet" id="nt-sheet" onclick="if(event.target===this)trNoteClose()">
+  <div class="lv-panel">
+    <div class="lv-title" id="nt-title">Note</div>
+    <div class="lv-sub">Shown next time you do this exercise (band, extra reps, pain, anything).</div>
+    <textarea id="nt-text" placeholder="e.g. red band, 12 reps felt easy, slight pinch on the left"></textarea>
+    <button class="nt-save" onclick="trNoteSave()">Save note</button>
+    <button class="lv-close" onclick="trNoteClose()">Cancel</button>
+  </div>
 </div>
 
 <!-- TRAINING DONE -->
@@ -328,10 +344,10 @@ const ONE=s=>[{label:'',secs:s}];
 const X={
   // ---------- morning ----------
   neck:{name:'Neck releases', cue:'Three directions — forward, left, right. Slow and gentle', steps:ONE(20)},
-  wrist:{name:'Wrist prep', cue:'Slow circles, then a gentle extension and flexion stretch — no forcing', steps:ONE(30)},
+  wrist:{name:'Wrist prep', cue:'Circles: slow wrist circles both ways and open-close the fists. Forward rocks: on all fours, palms flat, fingers forward, gently rock the shoulders over the hands and back. Back rocks: backs of the hands on the floor, fingers toward the knees, rock back gently. Light, never forced', steps:[{label:'Circles',secs:20},{label:'Forward rocks',secs:20},{label:'Back rocks',secs:20}]},
   catcow:{name:'Cat-Cow into Thread-the-Needle', cue:'Round and arch through cat-cow, then rotate open into thread-the-needle', steps:[{label:'Cat-Cow',secs:20},{label:'Left side',secs:20},{label:'Right side',secs:20}]},
-  dogflow:{name:'Down dog to up dog flow', cue:'Flow slowly between the two. In each down dog, pedal the heels a few times for the calves', steps:ONE(60)},
-  crab:{name:'Crab hold', cue:'Sit, hands behind you, fingers pointing back (or sideways if the wrists complain). Lift the hips to a tabletop, press the chest up, shoulders back and down', steps:[{label:'Round 1',secs:20},{label:'Round 2',secs:20}]},
+  dogflow:{name:'Down dog to up dog flow', cue:'Down dog: knees bent, lengthen the back first, then pedal the heels for the calves. Cobras: low and easy, hips on the floor. Flow: move slowly between down dog and up dog', steps:[{label:'Down dog',secs:30},{label:'Low cobras',secs:30},{label:'Down dog to up dog',secs:30}]},
+  crab:{name:'Crab hold', cue:'Sit, hands behind you, fingers pointing back (or sideways if the wrists complain). Lift the hips to a tabletop, press the chest up, shoulders back and down', steps:[{label:'Round 1',secs:20,rest:15},{label:'Round 2',secs:20}]},
   wgs:{name:"World's Greatest Stretch", cue:'Lunge, elbow to instep, rotate open and reach tall — slow and flowing, not a long hold', steps:LS(30)},
   hipcirc:{name:'Standing hip circles', cue:'Knee lifts up, opens out and around — slow, both directions, tall posture', steps:ONE(30)},
   legswing:{name:'Leg swings', cue:'Hand on a wall: 10 front-to-back, then 10 side-to-side — relaxed, growing range', steps:[{label:'Left leg',secs:30},{label:'Right leg',secs:30}]},
@@ -375,7 +391,7 @@ const X={
     {cue:'Heels flat, holding a support', test:'60 s flat with support'},
     {cue:'Heels flat, no support', test:'goal reached, keep it'}]},
   child:{name:"Child's pose", cue:'Knees wide, arms long, forehead down. Let the hips sink and breathe into the back', steps:ONE(60)},
-  chin:{name:'Chin tucks', cue:'Lying on your back, glide the chin straight back (a double chin), no nodding. Hold 5 s, release. 10 reps', steps:ONE(60)},
+  chin:{name:'Chin tucks', cue:'Lying on your back, knees bent, head on the floor. Without lifting the head, slide the back of the head along the floor to make the neck long: the chin moves straight back (a double chin), no nodding. Feel the front of the neck work. Hold 5 s, release. 10 reps', steps:ONE(60)},
   breath:{name:'Breathing', cue:'Lying on your back, knees bent. Breathe in through the nose for 4 s, out slowly for 6–8 s', steps:ONE(60)},
   // ---------- Tuesday loaded mobility extras ----------
   hang:{name:'Dead hang', cue:'Fully passive — let everything decompress', steps:ONE(30)},
@@ -387,8 +403,8 @@ const X={
 
 const ROUTINES={
   morning:{tab:'Morning',key:'mvmt_morning_v1',rest:5,done:'Body is awake. Have a good day.',
-    sub:'Wake-up flow, about 8.5 min. Gentle first, then build up: rotate, flow, swing, bounce.',
-    ex:[X.neck,X.wrist,X.catcow,X.dogflow,X.crab,X.wgs,X.hipcirc,X.legswing,X.armcirc,X.shake,X.pogo]},
+    sub:'Wake-up flow, about 9.5 min. Gentle first, then build up: rotate, flow, swing, bounce.',
+    ex:[X.neck,X.wrist,X.catcow,X.dogflow,X.crab,X.wgs,X.legswing,X.armcirc,X.shake,X.pogo]},
   evening:{tab:'Evening',key:'mvmt_v4',rest:8,done:'Great work. Time to rest.',
     sub:'About 16.5 min: active work for hips, feet and ankles, then wind down. Tap a level badge to change it.',
     ex:[X.tspine,X.n9090,X.addrock,X.couch,X.toetuck,X.fig4,X.toeyoga,X.shortfoot,X.kot,X.squat,X.child,X.chin,X.breath]},
@@ -605,7 +621,7 @@ function buildQueue(){
   EX.forEach((ex,ei)=>{
     ex.steps.forEach((st,si)=>{
       queue.push({type:'exercise',exIdx:ei,stepIdx:si});
-      queue.push({type:'rest'});
+      queue.push({type:'rest',secs:st.rest});
     });
   });
   if(queue[queue.length-1]?.type==='rest') queue.pop();
@@ -724,7 +740,7 @@ function showExercise(item){
 }
 
 function showRest(){
-  ovIsRest=true;ovRem=REST_SECS;ovTotal=REST_SECS;
+  ovIsRest=true;ovRem=ovTotal=(queue[qPos]&&queue[qPos].secs)||REST_SECS;
   // find next exercise
   let nextEx=null,nextSt=null;
   for(let i=qPos+1;i<queue.length;i++){
@@ -941,7 +957,7 @@ const TI={
   yraise:{name:'Prone Y-raises',type:'reps',target:'8–10',log:1,top:10,cue:'Face down on an incline bench or the floor, thumbs up, raise the arms in a Y. Shoulders down away from the ears, 2 s hold'},
   fhang:{name:'Dead hang',type:'reps',target:'20–40 s',log:'secs',cue:'Fully passive, let the shoulders and spine decompress. Log how many seconds'},
   f_child:{name:"Child's pose",type:'time',secs:60,cue:'Knees wide, arms long, let the hips sink and breathe into the back'},
-  f_chin:{name:'Chin tucks',type:'time',secs:60,cue:'Lying on your back, glide the chin straight back, no nodding. 5 s holds, 10 reps'},
+  f_chin:{name:'Chin tucks',type:'time',secs:60,cue:'Lying on your back, knees bent, head on the floor. Without lifting the head, slide the back of the head along the floor to make the neck long: the chin moves straight back (a double chin), no nodding. Feel the front of the neck work. Hold 5 s, release. 10 reps'},
   f_breath:{name:'Breathing',type:'time',secs:60,cue:'Lying down, in for 4 s, out slowly for 6–8 s'},
   bands:{name:'Band pull-aparts + external rotations',type:'reps',target:'15 + 15',cue:'Arms straight, squeeze the shoulder blades. Then elbows at the sides, rotate the band out'},
 };
@@ -1104,6 +1120,37 @@ function trSay(q){
   if(it.type==='reps'&&/^\d|–/.test(it.target))t+=', '+it.target.replace('–',' to ').replace('per leg','').replace('per side','')+' reps';
   say(t.replace(/\s+/g,' '));
 }
+/* ---- Exercise notes: one per exercise per workout, shown next time ---- */
+function trLastNote(id){
+  const ss=trLoad().sessions;
+  for(let i=ss.length-1;i>=0;i--){const n=ss[i].notes&&ss[i].notes[id];if(n)return n;}
+  return '';
+}
+function trNoteFor(id){return (tCur&&tCur.notes&&tCur.notes[id]!==undefined)?tCur.notes[id]:trLastNote(id);}
+function trNoteRender(){
+  const el=document.getElementById('tr-note');const q=TQ[tPos];
+  if(!q){el.style.display='none';return;}
+  const today=tCur&&tCur.notes&&tCur.notes[q.id]!==undefined;
+  const n=trNoteFor(q.id);
+  if(tPhase==='rest'||!n){el.style.display='none';}
+  else{el.style.display='';el.innerHTML='<b>'+(today?'Note today: ':'Note: ')+'</b>'+n.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));}
+  const nb=document.getElementById('tr-notebtn');
+  nb.textContent=tPhase==='rest'?'Note on '+TI[q.id].name.replace(/\s*\(.*?\)/g,'').replace(/,.*$/,''):'Note';
+}
+function trNoteOpen(){
+  const q=TQ[tPos];if(!q)return;
+  document.getElementById('nt-title').textContent='Note: '+TI[q.id].name.replace(/\s*\(.*?\)/g,'');
+  document.getElementById('nt-text').value=trNoteFor(q.id);
+  document.getElementById('nt-sheet').classList.add('visible');
+  setTimeout(()=>document.getElementById('nt-text').focus(),50);
+}
+function trNoteClose(){document.getElementById('nt-sheet').classList.remove('visible');}
+function trNoteSave(){
+  const q=TQ[tPos];if(!q||!tCur)return trNoteClose();
+  tCur.notes=tCur.notes||{};
+  tCur.notes[q.id]=document.getElementById('nt-text').value.trim();
+  saveCur();trNoteClose();trNoteRender();
+}
 function trShowWork(announce){
   trClear();tPhase='work';
   const q=TQ[tPos],it=TI[q.id];
@@ -1113,6 +1160,7 @@ function trShowWork(announce){
   document.getElementById('tr-target').textContent=it.type==='time'?'':('Target: '+it.target);
   document.getElementById('tr-last').innerHTML=it.log&&lastStr(q.id,q.side)?'Last time: '+lastStr(q.id,q.side)+(trHeavier(q.id,q.side)?' <span class="tr-heavier">→ go heavier</span>':''):'';
   document.getElementById('tr-cue').textContent=it.cue;
+  trNoteRender();
   document.getElementById('tr-log').classList.remove('on');
   const n=nextIdx(tPos);const nx=n>=0&&n!==tPos?TQ[n]:null;
   document.getElementById('tr-next').textContent=nx?'Next: '+TI[nx.id].name+(nx.side?' — '+nx.side:''):'Last one';
@@ -1196,6 +1244,7 @@ function trAfterWork(){
   document.getElementById('tr-time').textContent=fmt(tRem);
   const m=document.getElementById('tr-main');m.textContent='Skip rest';m.classList.add('rest-btn');
   document.getElementById('tr-next').textContent='';document.getElementById('tr-skip').textContent='';
+  trNoteRender();
   if(nx.id===q.id&&nx.side&&nx.side!==q.side&&nx.set===q.set)say('Switch to the '+nx.side.toLowerCase());else trSay(nx);
   trTick(()=>{playBeep('go');trGoUp();});
 }
@@ -1212,6 +1261,8 @@ function trFinish(){
   trClear();segStop();
   const d=trLoad();
   const sess={wk:tCur.wk||'sun',date:tCur.date||todayStr(),mins:Math.max(1,Math.round((tCur.activeMs||0)/60000)),sets:tCur.sets};
+  const nts={};Object.keys(tCur.notes||{}).forEach(k=>{if(tCur.notes[k])nts[k]=tCur.notes[k];});
+  if(Object.keys(nts).length)sess.notes=nts;
   // summary before saving (compare with previous sessions)
   const beats=[];
   const seen={};
@@ -1223,7 +1274,7 @@ function trFinish(){
   });
   const skipped={};TQ.forEach((q,i)=>{if(st(i)==='skip'){const k=TI[q.id].name.replace(/\s*\(.*?\)/g,'');skipped[k]=(skipped[k]||0)+1;}});
   const doneCount=TQ.filter((q,i)=>st(i)==='done').length;
-  if(sess.sets.length||doneCount){d.sessions.push(sess);trSave(d);}
+  if(sess.sets.length||doneCount||sess.notes){d.sessions.push(sess);trSave(d);}
   clearCur();tCur=null;TQ=[];releaseAwake();
   document.getElementById('tr-ov').classList.remove('visible');
   document.getElementById('trd-time').textContent=sess.mins+' min';
@@ -1237,6 +1288,11 @@ function trFinish(){
 }
 function trDoneClose(){document.getElementById('tr-done').classList.remove('visible');showTrain();}
 function trSessionText(s){
+  const out=trSetsText(s);
+  Object.keys(s.notes||{}).forEach(id=>{if(TI[id])out.push('Note – '+TI[id].name.replace(/,.*$/,'').replace(/\s*\(.*?\)/g,'')+': '+s.notes[id]);});
+  return out;
+}
+function trSetsText(s){
   const by={};s.sets.forEach(x=>{const k=x.id+'|'+(x.side||'');(by[k]=by[k]||[]).push(x);});
   return Object.keys(by).map(k=>{const [id,sd]=k.split('|');const u=TI[id].log==='secs'?'s':'';return TI[id].name.replace(/,.*$/,'')+(sd?' ('+sd.split(' ')[0]+')':'')+': '+by[k].map(x=>(x.kg?x.kg+'kg×':'')+x.reps+u).join(', ');});
 }
@@ -1246,7 +1302,7 @@ function showTrHistory(){
   const ss=trLoad().sessions.slice().reverse();
   document.getElementById('tr-hist').innerHTML=ss.length?ss.map(s=>{
     const dt=new Date(s.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-    return '<div class="tr-sess"><div class="tr-sess-h">'+dt+' · '+WORKOUTS[s.wk||'sun'].short+(s.mins?' · '+s.mins+' min':'')+'</div><div class="tr-sess-l">'+(trSessionText(s).join('<br>')||'No weights logged')+'</div></div>';
+    return '<div class="tr-sess"><div class="tr-sess-h">'+dt+' · '+WORKOUTS[s.wk||'sun'].short+(s.mins?' · '+s.mins+' min':'')+'</div><div class="tr-sess-l">'+(trSessionText(s).map(l=>l.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))).join('<br>')||'No weights logged')+'</div></div>';
   }).join(''):'<div class="empty">No workouts logged yet.</div>';
 }
 function trCopyLog(){
