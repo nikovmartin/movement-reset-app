@@ -357,9 +357,10 @@ const X={
     {label:'Down dog',secs:30,cue:'Knees bent, lengthen the back first, then pedal the heels for the calves'},
     {label:'Low cobras',secs:30,cue:'Lying on the belly, hips down. Lift the chest a little and lower, easy and low'},
     {label:'Down dog to up dog',secs:30,cue:'Flow slowly between down dog and up dog with the breath'}]},
-  crab:{name:'Crab hold', cue:'Sit, hands behind you, fingers pointing back (or sideways if the wrists complain). Lift the hips to a tabletop, press the chest up, shoulders back and down', steps:[{label:'Round 1',secs:20,rest:15},{label:'Round 2',secs:20,cue:'Same again: hips up, chest open, shoulders back and down'}]},
+  crab:{name:'Crab hold', cue:'Sit, hands behind you, fingers pointing back (or sideways if the wrists complain). Lift the hips to a tabletop, press the chest up, shoulders back and down', steps:[{label:'Round 1',secs:20},{label:'Round 2',secs:20,cue:'Same again: hips up, chest open, shoulders back and down'}]},
   wgs:{name:"World's Greatest Stretch", cue:'Lunge, elbow to instep, rotate open and reach tall — slow and flowing, not a long hold', steps:LS(30)},
   hipcirc:{name:'Standing hip circles', cue:'Knee lifts up, opens out and around — slow, both directions, tall posture', steps:ONE(30)},
+  cossh:{name:'High Cossack shifts', cue:'Wide stance, toes slightly out. Shift slowly side to side, bending one knee only until that heel wants to lift; other leg long. Hands together at the chest. Smooth and easy', steps:ONE(30)},
   legswing:{name:'Leg swings', cue:'Hand on a wall: 10 front-to-back, then 10 side-to-side — relaxed, growing range', steps:[{label:'Left leg',secs:30},{label:'Right leg',secs:30}]},
   armcirc:{name:'Arm circles + spinal rotations', cue:'Big arm circles both directions, then relaxed standing twists letting the arms swing', steps:ONE(30)},
   shake:{name:'Shake-out', cue:'Loose shaking from hands to shoulders, then legs one at a time', steps:ONE(20)},
@@ -412,9 +413,9 @@ const X={
 };
 
 const ROUTINES={
-  morning:{tab:'Morning',key:'mvmt_morning_v1',rest:5,done:'Body is awake. Have a good day.',
-    sub:'Wake-up flow, about 10 min. Gentle first, then build up: rotate, flow, swing, bounce.',
-    ex:[X.neck,X.wrist,X.catcow,X.dogflow,X.crab,X.wgs,X.legswing,X.armcirc,X.shake,X.pogo]},
+  morning:{tab:'Morning',key:'mvmt_morning_v1',rest:10,done:'Body is awake. Have a good day.',
+    sub:'Wake-up flow, about 12 min. Gentle first, then build up: rotate, flow, swing, bounce.',
+    ex:[X.neck,X.armcirc,X.wrist,X.catcow,X.dogflow,X.crab,X.wgs,X.cossh,X.legswing,X.shake,X.pogo]},
   evening:{tab:'Evening',key:'mvmt_v4',rest:8,done:'Great work. Time to rest.',
     sub:'About 16.5 min: active work for hips, feet and ankles, then wind down. Tap a level badge to change it.',
     ex:[X.tspine,X.n9090,X.addrock,X.couch,X.toetuck,X.fig4,X.toeyoga,X.shortfoot,X.kot,X.squat,X.child,X.chin,X.breath]},
