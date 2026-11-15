@@ -994,14 +994,16 @@ const WORKOUTS={
     ]},
 };
 const WK_KEY='mvmt_train_wk_v1';
+let wkManual=null; // a manual switch lasts until the workout is finished or the app is reopened
+try{localStorage.removeItem(WK_KEY);}catch(e){}
 function trWk(){
   const c=loadCur();if(c&&c.cur)return c.cur.wk||'sun';
-  try{const w=localStorage.getItem(WK_KEY);if(w&&WORKOUTS[w])return w;}catch(e){}
-  return new Date().getDay()===2?'fri':'sun';
+  if(wkManual&&WORKOUTS[wkManual])return wkManual;
+  return new Date().getDay()===2?'fri':'sun'; // Tuesday = loaded mobility, otherwise the Sunday workout
 }
 function trSetWk(w){
   if(loadCur())return;
-  try{localStorage.setItem(WK_KEY,w);}catch(e){}
+  wkManual=w;
   TQ=[];renderTrain();
 }
 function trPlan(){return WORKOUTS[trWk()].plan(trDeload());}
@@ -1042,7 +1044,7 @@ function nextIdx(from){
 /* active time: counts only while the workout screen is open */
 function segStart(){tCur.seg=Date.now();}
 function segStop(){if(tCur&&tCur.seg){tCur.activeMs=(tCur.activeMs||0)+(Date.now()-tCur.seg);tCur.seg=null;}}
-function saveCur(){try{const c=Object.assign({},tCur);if(c.seg){c.activeMs=(c.activeMs||0)+(Date.now()-c.seg);c.seg=null;}localStorage.setItem(TR_CUR,JSON.stringify({pos:tPos,cur:c}));}catch(e){}}
+function saveCur(){try{const c=Object.assign({},tCur);c.ts=Date.now();if(c.seg){c.activeMs=(c.activeMs||0)+(Date.now()-c.seg);c.seg=null;}localStorage.setItem(TR_CUR,JSON.stringify({pos:tPos,cur:c}));}catch(e){}}
 function loadCur(){try{const c=JSON.parse(localStorage.getItem(TR_CUR));return c&&c.cur?c:null;}catch(e){return null;}}
 function clearCur(){try{localStorage.removeItem(TR_CUR);}catch(e){}}
 
@@ -1091,7 +1093,26 @@ function trBegin(){
   else{tCur={date:todayStr(),wk:trWk(),activeMs:0,sets:[],stat:{}};tPos=0;}
   segStart();
 }
+function trIsStale(c){if(!c||!c.cur)return false;return c.cur.ts?(Date.now()-c.cur.ts>12*3600*1000):(c.cur.date!==todayStr());}
+function trArchiveCur(){
+  const c=loadCur();
+  if(c&&c.cur){
+    const cu=c.cur,nts={};Object.keys(cu.notes||{}).forEach(k=>{if(cu.notes[k])nts[k]=cu.notes[k];});
+    if((cu.sets&&cu.sets.length)||Object.keys(nts).length){
+      const d=trLoad();const sess={wk:cu.wk||'sun',date:cu.date||todayStr(),mins:Math.max(1,Math.round((cu.activeMs||0)/60000)),sets:cu.sets||[]};
+      if(Object.keys(nts).length)sess.notes=nts;d.sessions.push(sess);trSave(d);
+    }
+  }
+  clearCur();tCur=null;TQ=[];
+}
 function trStart(){
+  const c=loadCur();
+  if(trIsStale(c)){
+    const when=new Date((c.cur.ts||Date.parse(c.cur.date+'T12:00:00'))).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+    if(!confirm('This workout was left open since '+when+'.\n\nOK = resume it\nCancel = start a fresh workout (what you logged is kept in History)')){
+      trArchiveCur();wkManual=null;
+    }
+  }
   trBegin();
   if(st(tPos)){const n=nextIdx(tPos);if(n<0){trFinish();return;}tPos=n;}
   saveCur();
@@ -1113,7 +1134,7 @@ function trDiscard(){
   const btn=document.getElementById('tr-discard');
   if(!discardArm){btn.textContent='Tap again';btn.classList.add('tr-arm');discardArm=setTimeout(()=>{discardArm=null;btn.textContent='Discard';btn.classList.remove('tr-arm');},3000);return;}
   clearTimeout(discardArm);discardArm=null;btn.textContent='Discard';btn.classList.remove('tr-arm');
-  clearCur();tCur=null;TQ=[];renderTrain();
+  clearCur();tCur=null;TQ=[];wkManual=null;renderTrain();
 }
 let endArm=null;
 function trEndTap(el){
@@ -1271,7 +1292,7 @@ function trBack(){trClear();segStop();saveCur();releaseAwake();document.getEleme
 function trFinish(){
   trClear();segStop();
   const d=trLoad();
-  const sess={wk:tCur.wk||'sun',date:tCur.date||todayStr(),mins:Math.max(1,Math.round((tCur.activeMs||0)/60000)),sets:tCur.sets};
+  const sess={wk:tCur.wk||'sun',date:todayStr(),mins:Math.max(1,Math.round((tCur.activeMs||0)/60000)),sets:tCur.sets};
   const nts={};Object.keys(tCur.notes||{}).forEach(k=>{if(tCur.notes[k])nts[k]=tCur.notes[k];});
   if(Object.keys(nts).length)sess.notes=nts;
   // summary before saving (compare with previous sessions)
@@ -1286,7 +1307,7 @@ function trFinish(){
   const skipped={};TQ.forEach((q,i)=>{if(st(i)==='skip'){const k=TI[q.id].name.replace(/\s*\(.*?\)/g,'');skipped[k]=(skipped[k]||0)+1;}});
   const doneCount=TQ.filter((q,i)=>st(i)==='done').length;
   if(sess.sets.length||doneCount||sess.notes){d.sessions.push(sess);trSave(d);}
-  clearCur();tCur=null;TQ=[];releaseAwake();
+  clearCur();tCur=null;TQ=[];wkManual=null;releaseAwake();
   document.getElementById('tr-ov').classList.remove('visible');
   document.getElementById('trd-time').textContent=sess.mins+' min';
   let h='<b>'+doneCount+'</b> sets done, <b>'+sess.sets.length+'</b> logged.';
