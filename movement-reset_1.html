@@ -404,7 +404,7 @@ const X={
   child:{name:"Child's pose", cue:'Knees wide, arms long, forehead down. Let the hips sink and breathe into the back', steps:ONE(60)},
   chin:{name:'Chin tucks', cue:'Lying on your back, knees bent, head on the floor. Without lifting the head, slide the back of the head along the floor to make the neck long: the chin moves straight back (a double chin), no nodding. Feel the front of the neck work. Hold 5 s, release. 10 reps', steps:ONE(60)},
   breath:{name:'Breathing', cue:'Lying on your back, knees bent. Breathe in through the nose for 4 s, out slowly for 6–8 s', steps:ONE(60)},
-  // ---------- Thursday loaded mobility extras ----------
+  // ---------- Sunday loaded mobility extras ----------
   hang:{name:'Dead hang', cue:'Fully passive — let everything decompress', steps:ONE(30)},
   door:{name:'Doorway chest stretch', cue:'Forearm on the frame, step through and rotate away — opens the chest', steps:LS(30)},
   angels:{name:'Wall angels', cue:'Back flat to the wall, slide arms up and down — shoulder extension and external rotation', steps:ONE(60)},
@@ -975,7 +975,7 @@ const TI={
 const DELOAD_DAYS=[['2026-11-23','2026-11-29'],['2026-12-20','2026-12-27'],['2027-01-25','2027-01-31'],['2027-02-22','2027-02-28'],['2027-03-22','2027-03-28']];
 function trDeload(){const t=todayStr();return DELOAD_DAYS.some(([a,b])=>t>=a&&t<=b);}
 const WORKOUTS={
-  sun:{name:'Sunday lower body',short:'Sunday',
+  sun:{name:'Thursday lower body',short:'Thursday',
     sub:'Lower body, about 60 min. Stop 1–2 reps before failure; go heavier when every set hits 10.',
     plan:d=>[
       {name:'Warm-up round',sets:1,rest:20,items:['w_rdl','w_bss','w_ht','w_gob','stepdown']},
@@ -983,7 +983,7 @@ const WORKOUTS={
       {name:'Round 2',sets:d?2:3,rest:40,items:['bss','ht','sfbal']},
       {name:'Round 3',sets:2,rest:30,items:['calf','walks','copen','bands']},
     ]},
-  fri:{name:'Thursday loaded mobility',short:'Thursday',
+  fri:{name:'Sunday loaded mobility',short:'Sunday',
     sub:'Loaded mobility, about 25 min. Slow and controlled at end range, start light; go heavier (2 kg) when every set hits the top of the range.',
     plan:d=>[
       {name:'Warm-up',sets:1,rest:15,items:['f_catcow','f_dog','f_halo']},
@@ -999,7 +999,7 @@ try{localStorage.removeItem(WK_KEY);}catch(e){}
 function trWk(){
   const c=loadCur();if(c&&c.cur)return c.cur.wk||'sun';
   if(wkManual&&WORKOUTS[wkManual])return wkManual;
-  return new Date().getDay()===4?'fri':'sun'; // Thursday = loaded mobility, otherwise the Sunday workout
+  return new Date().getDay()===0?'fri':'sun'; // Sunday = loaded mobility, otherwise the leg workout
 }
 function trSetWk(w){
   if(loadCur())return;
