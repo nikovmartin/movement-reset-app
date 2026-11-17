@@ -362,6 +362,8 @@ const X={
   hipcirc:{name:'Standing hip circles', cue:'Knee lifts up, opens out and around — slow, both directions, tall posture', steps:ONE(30)},
   cossh:{name:'High Cossack shifts', cue:'Wide stance, toes slightly out. Shift slowly side to side, bending one knee only until that heel wants to lift; other leg long. Hands together at the chest. Smooth and easy', steps:ONE(30)},
   legswing:{name:'Leg swings', cue:'Hand on a wall: 10 front-to-back, then 10 side-to-side. Start at half range and let it grow; relaxed, never forced', steps:[{label:'Left leg',secs:30},{label:'Right leg',secs:30}]},
+  kotm:{name:'Knee-to-wall ankle rocks', cue:'Facing a wall, front foot flat, arch up. Rock the knee forward over the 2nd–3rd toe, about 10 slow rocks. Heel stays down', steps:[{label:'Left foot',secs:25},{label:'Right foot',secs:25}]},
+  squatm:{name:'Deep squat hold', cue:'Same setup as your evening level: heels on the wedge or holding a support if you need it. Sit deep, knees out over the toes, arches up. Easy, just open the position', steps:ONE(30)},
   armcirc:{name:'Arm circles + spinal rotations', cue:'Big arm circles both directions, then relaxed standing twists letting the arms swing', steps:ONE(30)},
   shake:{name:'Shake-out', cue:'Loose shaking from hands to shoulders, then legs one at a time', steps:ONE(20)},
   pogo:{name:'Pogo bounces', cue:'Small, quiet, springy hops on the balls of the feet — knees soft, arches up', steps:ONE(30)},
@@ -414,8 +416,8 @@ const X={
 
 const ROUTINES={
   morning:{tab:'Morning',key:'mvmt_morning_v1',rest:10,done:'Body is awake. Have a good day.',
-    sub:'Wake-up flow, about 12 min. Gentle first, then build up: rotate, flow, swing, bounce.',
-    ex:[X.neck,X.armcirc,X.wrist,X.catcow,X.dogflow,X.crab,X.wgs,X.legswing,X.cossh,X.shake,X.pogo]},
+    sub:'Wake-up flow, about 14 min. Gentle first, then build up: rotate, flow, swing, bounce.',
+    ex:[X.neck,X.armcirc,X.wrist,X.catcow,X.dogflow,X.crab,X.wgs,X.legswing,X.kotm,X.squatm,X.cossh,X.shake,X.pogo]},
   evening:{tab:'Evening',key:'mvmt_v4',rest:8,done:'Great work. Time to rest.',
     sub:'About 16.5 min: active work for hips, feet and ankles, then wind down. Tap a level badge to change it.',
     ex:[X.tspine,X.n9090,X.addrock,X.couch,X.toetuck,X.fig4,X.toeyoga,X.shortfoot,X.kot,X.squat,X.child,X.chin,X.breath]},
